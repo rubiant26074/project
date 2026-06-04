@@ -3,26 +3,21 @@ const themeSwitcher = document.querySelector('[data-theme-switcher]');
 if (themeSwitcher) {
     const body = document.body;
     const storageKey = 'project-control-theme';
-    const supportedThemes = ['industrial-clean', 'dark-steel', 'control-room'];
+    const supportedThemes = ['industrial-clean', 'dark-steel', 'control-room', 'green-schneider'];
     const initialTheme = supportedThemes.includes(localStorage.getItem(storageKey))
         ? localStorage.getItem(storageKey)
         : body.dataset.theme;
 
     setTheme(initialTheme);
 
-    themeSwitcher.querySelectorAll('[data-theme-option]').forEach((button) => {
-        button.addEventListener('click', () => {
-            setTheme(button.dataset.themeOption);
-            localStorage.setItem(storageKey, button.dataset.themeOption);
-        });
+    themeSwitcher.addEventListener('change', () => {
+        setTheme(themeSwitcher.value);
+        localStorage.setItem(storageKey, themeSwitcher.value);
     });
 
     function setTheme(theme) {
         body.dataset.theme = theme;
-
-        themeSwitcher.querySelectorAll('[data-theme-option]').forEach((button) => {
-            button.classList.toggle('is-active', button.dataset.themeOption === theme);
-        });
+        themeSwitcher.value = theme;
     }
 }
 

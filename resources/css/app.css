@@ -73,6 +73,28 @@ body[data-theme='control-room'] {
     --card-shadow-hover: 0 22px 40px rgba(1, 10, 16, 0.48);
 }
 
+body[data-theme='green-schneider'] {
+    --page-bg: #edf5ef;
+    --page-bg-deep: #dceade;
+    --panel: #ffffff;
+    --panel-muted: #f3f8f3;
+    --ink: #123127;
+    --muted: #547062;
+    --line: #a8c0b0;
+    --line-strong: #2e7d32;
+    --accent: #63b32e;
+    --accent-dark: #009530;
+    --accent-cool: #5a8f74;
+    --open-bg: #e5f2e6;
+    --open-soft: #f5fbf5;
+    --proses-bg: #d9ecd8;
+    --proses-soft: #eef7ee;
+    --close-bg: #cfe8d1;
+    --close-soft: #eaf6eb;
+    --card-shadow: 0 16px 36px rgba(21, 62, 36, 0.1);
+    --card-shadow-hover: 0 18px 32px rgba(21, 62, 36, 0.16);
+}
+
 * {
     box-sizing: border-box;
 }
@@ -97,6 +119,12 @@ body[data-theme='control-room'] {
     background:
         radial-gradient(circle at top right, rgba(52, 212, 217, 0.08) 0%, rgba(52, 212, 217, 0) 26%),
         linear-gradient(180deg, #081117 0%, var(--page-bg-deep) 22%, var(--page-bg) 100%);
+}
+
+body[data-theme='green-schneider'] {
+    background:
+        radial-gradient(circle at top right, rgba(0, 149, 48, 0.08) 0%, rgba(0, 149, 48, 0) 24%),
+        linear-gradient(180deg, #f7fbf7 0%, var(--page-bg-deep) 18%, var(--page-bg) 100%);
 }
 
 a {
@@ -173,9 +201,18 @@ body[data-theme='control-room'] .topbar {
 
 .theme-switcher {
     display: flex;
+    align-items: center;
     gap: 8px;
     flex-wrap: wrap;
     justify-content: flex-end;
+}
+
+.theme-switcher-label {
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
 }
 
 .topbar-user {
@@ -205,42 +242,44 @@ body[data-theme='control-room'] .topbar {
     color: var(--muted);
 }
 
-.theme-chip {
-    padding: 8px 12px;
+.theme-select {
+    min-width: 200px;
+    padding: 8px 36px 8px 12px;
     border: 1px solid rgba(43, 57, 72, 0.14);
     border-radius: 999px;
     background: rgba(255, 255, 255, 0.76);
-    color: var(--muted);
+    color: var(--ink);
     font-size: 0.76rem;
     font-weight: 700;
     letter-spacing: 0.06em;
     text-transform: uppercase;
     cursor: pointer;
     transition: all 150ms ease;
+    appearance: none;
+    background-image:
+        linear-gradient(45deg, transparent 50%, var(--accent-dark) 50%),
+        linear-gradient(135deg, var(--accent-dark) 50%, transparent 50%);
+    background-position:
+        calc(100% - 18px) calc(50% - 3px),
+        calc(100% - 12px) calc(50% - 3px);
+    background-size: 6px 6px, 6px 6px;
+    background-repeat: no-repeat;
 }
 
-.theme-chip:hover {
-    color: var(--ink);
+.theme-select:hover {
     border-color: rgba(43, 57, 72, 0.28);
 }
 
-.theme-chip.is-active {
-    border-color: rgba(184, 116, 0, 0.24);
-    background: linear-gradient(180deg, rgba(240, 163, 31, 0.18) 0%, rgba(240, 163, 31, 0.1) 100%);
-    color: var(--ink);
+.theme-select:focus {
+    outline: none;
+    border-color: rgba(184, 116, 0, 0.42);
+    box-shadow: 0 0 0 4px rgba(240, 163, 31, 0.14);
 }
 
-body[data-theme='dark-steel'] .theme-chip,
-body[data-theme='control-room'] .theme-chip {
+body[data-theme='dark-steel'] .theme-select,
+body[data-theme='control-room'] .theme-select {
     border-color: rgba(255, 255, 255, 0.1);
     background: rgba(255, 255, 255, 0.05);
-    color: var(--muted);
-}
-
-body[data-theme='dark-steel'] .theme-chip.is-active,
-body[data-theme='control-room'] .theme-chip.is-active {
-    border-color: rgba(255, 255, 255, 0.18);
-    background: linear-gradient(180deg, rgba(53, 211, 217, 0.2) 0%, rgba(53, 211, 217, 0.08) 100%);
     color: var(--ink);
 }
 

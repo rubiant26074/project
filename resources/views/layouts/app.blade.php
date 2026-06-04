@@ -26,10 +26,14 @@
                             @endif
                         </nav>
                     @endauth
-                    <div class="theme-switcher" data-theme-switcher>
-                        <button class="theme-chip is-active" type="button" data-theme-option="industrial-clean">Industrial Clean</button>
-                        <button class="theme-chip" type="button" data-theme-option="dark-steel">Dark Steel</button>
-                        <button class="theme-chip" type="button" data-theme-option="control-room">Control Room</button>
+                    <div class="theme-switcher">
+                        <label class="theme-switcher-label" for="theme-switcher">Theme</label>
+                        <select id="theme-switcher" class="theme-select" data-theme-switcher>
+                            <option value="industrial-clean">Industrial Clean</option>
+                            <option value="dark-steel">Dark Steel</option>
+                            <option value="control-room">Control Room</option>
+                            <option value="green-schneider">Green Schneider</option>
+                        </select>
                     </div>
                     @auth
                         <div class="topbar-user">
