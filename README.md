@@ -1,3 +1,64 @@
+## Project Control Manager
+
+Aplikasi ini dibangun dengan Laravel untuk memantau progress project, master flow, dan proses delivery project industrial.
+
+## Setup Lokal
+
+1. Clone repository ini.
+2. Install dependency:
+
+```bash
+composer install
+npm install
+```
+
+3. Buat file environment:
+
+```bash
+cp .env.example .env
+```
+
+4. Generate app key:
+
+```bash
+php artisan key:generate
+```
+
+5. Pilih salah satu sumber database:
+
+- Gunakan database contoh yang sudah ikut repo di `database/database.sqlite`
+- Atau bangun ulang database dari migration dan seeder:
+
+```bash
+php artisan migrate
+php artisan db:seed
+```
+
+6. Jalankan asset front-end:
+
+```bash
+npm run build
+```
+
+7. Jalankan aplikasi:
+
+```bash
+composer run dev
+```
+
+## Akun Login Default
+
+- Admin: `admin@project-control.local` / `admin12345`
+- User: `user@project-control.local` / `user12345`
+
+## Catatan Database
+
+- File SQLite contoh tersedia di `database/database.sqlite`
+- Struktur database tetap tersedia lewat migration di `database/migrations`
+- Data awal tetap tersedia lewat seeder di `database/seeders/DatabaseSeeder.php`
+
+---
+
 <p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
 
 <p align="center">
