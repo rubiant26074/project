@@ -64,6 +64,10 @@
                             <h3>{{ $project->client_name }}</h3>
                             <p>{{ $project->project_name }}</p>
                             <div class="project-card-meta">
+                                <span>Start {{ $project->start_project?->format('d M Y') ?? '-' }}</span>
+                                <span>Finish {{ $project->target_finish?->format('d M Y') ?? '-' }}</span>
+                            </div>
+                            <div class="project-card-meta">
                                 <span>{{ $project->processes->where('status', 'close')->count() }}/{{ $project->processes->count() }} proses close</span>
                                 <span>{{ ucfirst($project->status) }}</span>
                             </div>

@@ -41,6 +41,14 @@
                 <strong>{{ $project->project_name }}</strong>
             </article>
             <article class="summary-card">
+                <span>Start Project</span>
+                <strong>{{ $project->start_project?->format('d M Y') ?? '-' }}</strong>
+            </article>
+            <article class="summary-card">
+                <span>Target Finish</span>
+                <strong>{{ $project->target_finish?->format('d M Y') ?? '-' }}</strong>
+            </article>
+            <article class="summary-card">
                 <span>Total Proses</span>
                 <strong>{{ $project->processes->count() }}</strong>
             </article>

@@ -13,6 +13,7 @@ class Project extends Model
         'wo_number',
         'client_name',
         'project_name',
+        'start_project',
         'target_finish',
         'description',
         'status',
@@ -20,6 +21,7 @@ class Project extends Model
     ];
 
     protected $casts = [
+        'start_project' => 'date',
         'target_finish' => 'date',
     ];
 

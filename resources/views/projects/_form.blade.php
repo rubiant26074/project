@@ -17,14 +17,25 @@
             <label for="project_name">Nama Project</label>
             <input id="project_name" name="project_name" type="text" value="{{ old('project_name', $project->project_name ?? '') }}" required>
         </div>
-        <div class="form-field">
-            <label for="target_finish">Target Finish</label>
-            <input
-                id="target_finish"
-                name="target_finish"
-                type="date"
-                value="{{ old('target_finish', ($project->target_finish ?? null)?->format('Y-m-d') ?? '') }}"
-            >
+        <div class="form-stack">
+            <div class="form-field">
+                <label for="start_project">Start Project</label>
+                <input
+                    id="start_project"
+                    name="start_project"
+                    type="date"
+                    value="{{ old('start_project', ($project->start_project ?? null)?->format('Y-m-d') ?? '') }}"
+                >
+            </div>
+            <div class="form-field">
+                <label for="target_finish">Target Finish</label>
+                <input
+                    id="target_finish"
+                    name="target_finish"
+                    type="date"
+                    value="{{ old('target_finish', ($project->target_finish ?? null)?->format('Y-m-d') ?? '') }}"
+                >
+            </div>
         </div>
     </div>
 
