@@ -165,6 +165,7 @@ if (flowLayoutEditor) {
     const rawConnections = JSON.parse(flowLayoutEditor.dataset.connections ?? '[]');
     const steps = rawSteps.map((step) => ({
         ...step,
+        id: Number(step.id),
         original_x: Number(step.position_x),
         original_y: Number(step.position_y),
         position_x: Number(step.position_x),
@@ -172,6 +173,9 @@ if (flowLayoutEditor) {
     }));
     const connections = rawConnections.map((connection) => ({
         ...connection,
+        id: Number(connection.id),
+        from_id: Number(connection.from_id),
+        to_id: Number(connection.to_id),
         start_x: connection.start_x === null ? null : Number(connection.start_x),
         start_y: connection.start_y === null ? null : Number(connection.start_y),
         bend_x: connection.bend_x === null ? null : Number(connection.bend_x),
