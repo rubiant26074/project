@@ -120,16 +120,14 @@
                     </div>
                 </div>
 
-                @if ($canUpdateThisProcess)
-                    <form method="POST" action="{{ route('projects.processes.comments.store', [$project, $process]) }}" class="form-stack">
-                        @csrf
-                        <div class="form-field">
-                            <label for="comment">Komentar</label>
-                            <textarea id="comment" name="comment" rows="4" placeholder="Tulis update, catatan kendala, atau arahan proses..." required></textarea>
-                        </div>
-                        <button class="toolbar-button toolbar-button-primary toolbar-button-small" type="submit">Simpan Komentar</button>
-                    </form>
-                @endif
+                <form method="POST" action="{{ route('projects.processes.comments.store', [$project, $process]) }}" class="form-stack">
+                    @csrf
+                    <div class="form-field">
+                        <label for="comment">Komentar</label>
+                        <textarea id="comment" name="comment" rows="4" placeholder="Tulis update, catatan kendala, atau arahan proses..." required></textarea>
+                    </div>
+                    <button class="toolbar-button toolbar-button-primary toolbar-button-small" type="submit">Simpan Komentar</button>
+                </form>
 
                 <div class="activity-feed">
                     @forelse ($process->comments as $comment)
@@ -139,7 +137,7 @@
                                     <strong>{{ $comment->user?->name ?? 'System' }}</strong>
                                     <span>{{ $comment->created_at->format('d M Y H:i') }}</span>
                                 </div>
-                                @if (auth()->user()->canDeleteProcessComment($comment->user_id) && $canUpdateThisProcess)
+                                @if (auth()->user()->canDeleteProcessComment($comment->user_id))
                                     <form method="POST" action="{{ route('projects.processes.comments.destroy', [$project, $process, $comment]) }}">
                                         @csrf
                                         @method('DELETE')

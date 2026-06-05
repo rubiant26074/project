@@ -1591,6 +1591,18 @@ body[data-theme='control-room'] .admin-table textarea {
     font-weight: 800;
 }
 
+.table-chip-pending {
+    border-color: rgba(184, 116, 0, 0.22);
+    background: rgba(239, 212, 175, 0.78);
+    color: #8a5200;
+}
+
+.table-chip-done {
+    border-color: rgba(0, 149, 48, 0.2);
+    background: rgba(221, 244, 226, 0.88);
+    color: #0d8a2c;
+}
+
 .checkbox-inline-compact {
     min-height: 42px;
 }

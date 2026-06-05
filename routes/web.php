@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\MasterFlowController;
+use App\Http\Controllers\MyTaskController;
 use App\Http\Controllers\ProjectDashboardController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProjectProcessCommentController;
@@ -20,6 +21,7 @@ Route::middleware('guest')->group(function (): void {
 Route::middleware('auth')->group(function (): void {
     Route::post('/logout', [AuthController::class, 'destroy'])->name('logout');
     Route::get('/', [ProjectDashboardController::class, 'index'])->name('dashboard');
+    Route::get('/tugas-saya', [MyTaskController::class, 'index'])->name('my-tasks.index');
 
     Route::prefix('projects')->name('projects.')->group(function (): void {
         Route::middleware('role:admin,manager')->group(function (): void {
@@ -32,12 +34,10 @@ Route::middleware('auth')->group(function (): void {
 
         Route::get('/{project}', [ProjectDashboardController::class, 'show'])->name('show');
         Route::get('/{project}/processes/{process}', [ProjectDashboardController::class, 'showProcess'])->name('processes.show');
-        Route::middleware('role:admin,manager,user')->group(function (): void {
-            Route::post('/{project}/processes/{process}/checklists', [ProjectProcessChecklistController::class, 'store'])->name('processes.checklists.store');
-            Route::put('/{project}/processes/{process}/checklists/{checklist}', [ProjectProcessChecklistController::class, 'update'])->name('processes.checklists.update');
-            Route::delete('/{project}/processes/{process}/checklists/{checklist}', [ProjectProcessChecklistController::class, 'destroy'])->name('processes.checklists.destroy');
-            Route::post('/{project}/processes/{process}/comments', [ProjectProcessCommentController::class, 'store'])->name('processes.comments.store');
-        });
+        Route::post('/{project}/processes/{process}/checklists', [ProjectProcessChecklistController::class, 'store'])->name('processes.checklists.store');
+        Route::put('/{project}/processes/{process}/checklists/{checklist}', [ProjectProcessChecklistController::class, 'update'])->name('processes.checklists.update');
+        Route::delete('/{project}/processes/{process}/checklists/{checklist}', [ProjectProcessChecklistController::class, 'destroy'])->name('processes.checklists.destroy');
+        Route::post('/{project}/processes/{process}/comments', [ProjectProcessCommentController::class, 'store'])->name('processes.comments.store');
         Route::delete('/{project}/processes/{process}/comments/{comment}', [ProjectProcessCommentController::class, 'destroy'])->name('processes.comments.destroy');
     });
 

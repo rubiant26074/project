@@ -14,7 +14,6 @@ class ProjectProcessCommentController extends Controller
     public function store(Request $request, Project $project, ProjectProcess $process, ProjectProcessActivityService $activityService): RedirectResponse
     {
         abort_unless((int) $process->project_id === (int) $project->getKey(), 404);
-        abort_unless($request->user()?->canUpdateProcess($process), 403);
 
         $validated = $request->validate([
             'comment' => ['required', 'string', 'max:4000'],
@@ -41,7 +40,7 @@ class ProjectProcessCommentController extends Controller
             && (int) $comment->project_process_id === (int) $process->getKey(),
             404,
         );
-        abort_unless($request->user()?->canUpdateProcess($process) && $request->user()?->canDeleteProcessComment($comment->user_id), 403);
+        abort_unless($request->user()?->canDeleteProcessComment($comment->user_id), 403);
 
         $activityService->log($process, $request->user(), 'comment_deleted', 'Komentar proses dihapus.', [
             'comment_id' => $comment->id,

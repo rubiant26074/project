@@ -85,17 +85,16 @@ class User extends Authenticatable
             return true;
         }
 
-        if (! $this->canUpdateProcesses()) {
-            return false;
-        }
-
         $allowedRoles = $process->allowed_role_codes ?? [];
 
-        if (empty($allowedRoles)) {
-            return true;
+        if (! empty($allowedRoles)) {
+            return in_array(strtolower((string) $this->role), array_map(
+                fn ($role): string => strtolower((string) $role),
+                $allowedRoles,
+            ), true);
         }
 
-        return in_array($this->role, $allowedRoles, true);
+        return $this->canUpdateProcesses();
     }
 
     public function canAccess(string $permission): bool
@@ -107,15 +106,11 @@ class User extends Authenticatable
 
     public function canDeleteProcessComment(?int $commentUserId): bool
     {
-        if (! $this->canUpdateProcesses()) {
-            return false;
-        }
-
         if ($this->canAccess('process_comment_delete_any')) {
             return true;
         }
 
-        return $this->canAccess('process_comment_delete_own') && $commentUserId === $this->id;
+        return $commentUserId === $this->id;
     }
 
     public static function roleMatrix(): array
