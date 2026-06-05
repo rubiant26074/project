@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\MasterFlow;
 use App\Models\Project;
+use App\Models\Role;
 use App\Models\User;
 use App\Support\ProjectFlowBuilder;
 use App\Support\ProjectProgressService;
@@ -19,11 +20,53 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        Role::query()->updateOrCreate(
+            ['code' => 'admin'],
+            [
+                'name' => 'Administrator',
+                'description' => 'Akses penuh ke seluruh fitur aplikasi termasuk master flow, role, dan user management.',
+                'is_active' => true,
+                'is_system' => true,
+            ],
+        );
+
+        Role::query()->updateOrCreate(
+            ['code' => 'user'],
+            [
+                'name' => 'User',
+                'description' => 'Akses operasional untuk melihat dashboard project dan memperbarui proses sesuai izin.',
+                'is_active' => true,
+                'is_system' => true,
+            ],
+        );
+
+        Role::query()->updateOrCreate(
+            ['code' => 'manager'],
+            [
+                'name' => 'Manager',
+                'description' => 'Akses mengelola project dan memantau progress, tanpa hak kelola role dan user.',
+                'is_active' => true,
+                'is_system' => true,
+            ],
+        );
+
+        Role::query()->updateOrCreate(
+            ['code' => 'viewer'],
+            [
+                'name' => 'Viewer',
+                'description' => 'Akses lihat dashboard dan detail progress tanpa hak edit proses.',
+                'is_active' => true,
+                'is_system' => true,
+            ],
+        );
+
         User::query()->updateOrCreate(
             ['email' => 'admin@project-control.local'],
             [
                 'name' => 'Administrator',
                 'role' => 'admin',
+                'is_active' => true,
+                'approved_at' => now(),
                 'password' => 'admin12345',
             ],
         );
@@ -33,6 +76,8 @@ class DatabaseSeeder extends Seeder
             [
                 'name' => 'Project User',
                 'role' => 'user',
+                'is_active' => true,
+                'approved_at' => now(),
                 'password' => 'user12345',
             ],
         );

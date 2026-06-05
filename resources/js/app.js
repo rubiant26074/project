@@ -21,7 +21,136 @@ if (themeSwitcher) {
     }
 }
 
+const scrollPreservePage = document.querySelector('[data-preserve-scroll-page]');
+
+if (scrollPreservePage) {
+    const scrollStateKey = `project-control-scroll:${window.location.pathname}${window.location.search}`;
+    const scrollContainers = Array.from(scrollPreservePage.querySelectorAll('[data-preserve-scroll-container]'));
+    const forms = Array.from(scrollPreservePage.querySelectorAll('form'));
+
+    restoreScrollState();
+
+    forms.forEach((form) => {
+        form.addEventListener('submit', () => {
+            storeScrollState();
+        });
+    });
+
+    window.addEventListener('beforeunload', storeScrollState);
+
+    function storeScrollState() {
+        const payload = {
+            windowX: window.scrollX,
+            windowY: window.scrollY,
+            containers: scrollContainers.map((container) => ({
+                id: container.dataset.preserveScrollContainer,
+                left: container.scrollLeft,
+                top: container.scrollTop,
+            })),
+        };
+
+        sessionStorage.setItem(scrollStateKey, JSON.stringify(payload));
+    }
+
+    function restoreScrollState() {
+        const rawState = sessionStorage.getItem(scrollStateKey);
+
+        if (!rawState) {
+            return;
+        }
+
+        let state;
+
+        try {
+            state = JSON.parse(rawState);
+        } catch (error) {
+            sessionStorage.removeItem(scrollStateKey);
+            return;
+        }
+
+        if ('scrollRestoration' in window.history) {
+            window.history.scrollRestoration = 'manual';
+        }
+
+        const applyState = () => {
+            window.scrollTo(state.windowX ?? 0, state.windowY ?? 0);
+
+            if (Array.isArray(state.containers)) {
+                state.containers.forEach((entry) => {
+                    if (!entry?.id) {
+                        return;
+                    }
+
+                    const container = scrollPreservePage.querySelector(`[data-preserve-scroll-container="${entry.id}"]`);
+
+                    if (!container) {
+                        return;
+                    }
+
+                    container.scrollLeft = entry.left ?? 0;
+                    container.scrollTop = entry.top ?? 0;
+                });
+            }
+        };
+
+        window.requestAnimationFrame(() => {
+            applyState();
+            window.setTimeout(applyState, 120);
+            window.setTimeout(() => {
+                sessionStorage.removeItem(scrollStateKey);
+            }, 240);
+        });
+    }
+}
+
 const flowLayoutEditor = document.querySelector('[data-flow-layout-editor]');
+
+const checklistLinkForms = Array.from(document.querySelectorAll('[data-checklist-link-form]'));
+
+checklistLinkForms.forEach((form) => {
+    const toggle = form.querySelector('[data-checklist-toggle]');
+    const documentLinkInput = form.querySelector('[data-document-link-input]');
+
+    if (!toggle || !documentLinkInput) {
+        return;
+    }
+
+    toggle.addEventListener('change', () => {
+        if (toggle.checked) {
+            const promptValue = documentLinkInput.value || 'https://';
+            const documentLink = window.prompt('Masukkan link dokumen untuk checklist ini:', promptValue);
+
+            if (documentLink === null) {
+                toggle.checked = false;
+                return;
+            }
+
+            const trimmedLink = documentLink.trim();
+
+            if (!trimmedLink) {
+                window.alert('Link dokumen wajib diisi saat checklist ditandai selesai.');
+                toggle.checked = false;
+                return;
+            }
+
+            try {
+                const parsedUrl = new URL(trimmedLink);
+
+                if (!['http:', 'https:'].includes(parsedUrl.protocol)) {
+                    throw new Error('Invalid protocol');
+                }
+
+                documentLinkInput.value = trimmedLink;
+            } catch (error) {
+                window.alert('Link dokumen harus berupa URL yang valid, misalnya https://domain.com/file');
+                toggle.checked = false;
+                return;
+            }
+        }
+
+        form.submit();
+    });
+});
 
 if (flowLayoutEditor) {
     const saveButton = document.querySelector('[data-layout-save]');
@@ -31,6 +160,7 @@ if (flowLayoutEditor) {
     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
     const bounds = { width: 1200, height: 760 };
     const nodeSize = { width: 170, height: 86 };
+    const edgeOverlap = 4;
     const rawSteps = JSON.parse(flowLayoutEditor.dataset.steps ?? '[]');
     const rawConnections = JSON.parse(flowLayoutEditor.dataset.connections ?? '[]');
     const steps = rawSteps.map((step) => ({
@@ -156,12 +286,13 @@ if (flowLayoutEditor) {
         steps.forEach((step) => {
             const node = document.createElement('button');
             node.type = 'button';
-            node.className = 'flow-node flow-node-open flow-node-editor';
+            node.className = `flow-node flow-node-${step.status} flow-node-editor`;
             node.dataset.stepId = String(step.id);
             node.innerHTML = `
                 <span class="flow-node-badge">STEP</span>
                 <strong>${step.name}</strong>
                 <small>X: <span data-x>${step.position_x.toFixed(1)}</span>% | Y: <span data-y>${step.position_y.toFixed(1)}</span>%</small>
+                <span class="flow-node-status-icon flow-node-status-icon-${step.status}">${getStatusIcon(step.status)}</span>
             `;
 
             makeDraggable(node, step);
@@ -316,6 +447,8 @@ if (flowLayoutEditor) {
 
     function renderConnectionHandles(connection, fromStep, toStep) {
         const pointSet = getConnectionHandleSet(connection, fromStep, toStep);
+        const fromBox = getNodeBox(fromStep);
+        const toBox = getNodeBox(toStep);
 
         ['start', 'middle1', 'middle2', 'end'].forEach((type) => {
             const key = `${connection.id}-${type}`;
@@ -336,6 +469,14 @@ if (flowLayoutEditor) {
             handle.style.left = `${point.percentX}%`;
             handle.style.top = `${point.percentY}%`;
             handle.title = `Atur titik ${type} garis ${fromStep.name} ke ${toStep.name}`;
+
+            if (type === 'start') {
+                handle.dataset.edge = detectHandleEdge(point, fromBox);
+            } else if (type === 'end') {
+                handle.dataset.edge = detectHandleEdge(point, toBox);
+            } else {
+                handle.dataset.edge = 'free';
+            }
         });
     }
 
@@ -400,8 +541,15 @@ if (flowLayoutEditor) {
             const rawY = ((event.clientY - rect.top) / rect.height) * 100;
 
             if (type === 'start') {
-                connection.start_x = clamp(rawX, 2, 98);
-                connection.start_y = clamp(rawY, 2, 98);
+                const fromStep = steps.find((step) => step.id === connection.from_id);
+
+                if (!fromStep) {
+                    return;
+                }
+
+                const snappedPoint = snapPointToNodeEdge(rawX, rawY, getNodeBox(fromStep));
+                connection.start_x = snappedPoint.x;
+                connection.start_y = snappedPoint.y;
             } else if (type === 'middle1') {
                 connection.bend_x = clamp(rawX, 2, 98);
                 connection.bend_y = clamp(rawY, 2, 98);
@@ -409,8 +557,15 @@ if (flowLayoutEditor) {
                 connection.mid2_x = clamp(rawX, 2, 98);
                 connection.mid2_y = clamp(rawY, 2, 98);
             } else {
-                connection.end_x = clamp(rawX, 2, 98);
-                connection.end_y = clamp(rawY, 2, 98);
+                const toStep = steps.find((step) => step.id === connection.to_id);
+
+                if (!toStep) {
+                    return;
+                }
+
+                const snappedPoint = snapPointToNodeEdge(rawX, rawY, getNodeBox(toStep));
+                connection.end_x = snappedPoint.x;
+                connection.end_y = snappedPoint.y;
             }
             renderLines();
         });
@@ -458,8 +613,8 @@ if (flowLayoutEditor) {
 
         if (isVerticalPriority) {
             if (dy >= 0) {
-                const start = { x: fromBox.cx, y: fromBox.bottom };
-                const end = { x: toBox.cx, y: toBox.top };
+                const start = { x: fromBox.cx, y: fromBox.bottom - edgeOverlap };
+                const end = { x: toBox.cx, y: toBox.top + edgeOverlap };
                 const middle = { x: fromBox.cx, y: start.y + ((end.y - start.y) / 2) };
 
                 const middle2 = { x: toBox.cx, y: middle.y };
@@ -467,8 +622,8 @@ if (flowLayoutEditor) {
                 return { start, middle, middle2, end };
             }
 
-            const start = { x: fromBox.cx, y: fromBox.top };
-            const end = { x: toBox.cx, y: toBox.bottom };
+            const start = { x: fromBox.cx, y: fromBox.top + edgeOverlap };
+            const end = { x: toBox.cx, y: toBox.bottom - edgeOverlap };
             const middle = { x: fromBox.cx, y: end.y + ((start.y - end.y) / 2) };
             const middle2 = { x: toBox.cx, y: middle.y };
 
@@ -476,16 +631,16 @@ if (flowLayoutEditor) {
         }
 
         if (dx >= 0) {
-            const start = { x: fromBox.right, y: fromBox.cy };
-            const end = { x: toBox.left, y: toBox.cy };
+            const start = { x: fromBox.right - edgeOverlap, y: fromBox.cy };
+            const end = { x: toBox.left + edgeOverlap, y: toBox.cy };
             const middle = { x: start.x + ((end.x - start.x) / 2), y: start.y };
             const middle2 = { x: middle.x, y: end.y };
 
             return { start, middle, middle2, end };
         }
 
-        const start = { x: fromBox.left, y: fromBox.cy };
-        const end = { x: toBox.right, y: toBox.cy };
+        const start = { x: fromBox.left + edgeOverlap, y: fromBox.cy };
+        const end = { x: toBox.right - edgeOverlap, y: toBox.cy };
         const middle = { x: end.x + ((start.x - end.x) / 2), y: start.y };
         const middle2 = { x: middle.x, y: end.y };
 
@@ -506,6 +661,87 @@ if (flowLayoutEditor) {
             x: (percentX / 100) * bounds.width,
             y: (percentY / 100) * bounds.height,
         };
+    }
+
+    function getStatusIcon(status) {
+        if (status === 'close') {
+            return `
+                <svg viewBox="0 0 64 64" aria-hidden="true">
+                    <circle cx="32" cy="32" r="29"></circle>
+                    <rect x="18" y="18" width="24" height="28" rx="4"></rect>
+                    <path d="M24 33l6 6 12-14"></path>
+                </svg>
+            `;
+        }
+
+        if (status === 'proses') {
+            return `
+                <svg viewBox="0 0 64 64" aria-hidden="true">
+                    <circle cx="32" cy="32" r="29"></circle>
+                    <path d="M28 13h8l1 5a17 17 0 0 1 5 2l4-3 6 6-3 4a17 17 0 0 1 2 5l5 1v8l-5 1a17 17 0 0 1-2 5l3 4-6 6-4-3a17 17 0 0 1-5 2l-1 5h-8l-1-5a17 17 0 0 1-5-2l-4 3-6-6 3-4a17 17 0 0 1-2-5l-5-1v-8l5-1a17 17 0 0 1 2-5l-3-4 6-6 4 3a17 17 0 0 1 5-2z"></path>
+                    <circle cx="32" cy="37" r="7"></circle>
+                    <path d="M46 39h3l1 3 3 1v3l-3 1-1 3h-3l-1-3-3-1v-3l3-1z"></path>
+                    <circle cx="47.5" cy="44.5" r="2.5"></circle>
+                </svg>
+            `;
+        }
+
+        return `
+            <svg viewBox="0 0 64 64" aria-hidden="true">
+                <circle cx="32" cy="32" r="29"></circle>
+                <path d="M22 22l20 20"></path>
+                <path d="M42 22L22 42"></path>
+            </svg>
+        `;
+    }
+
+    function snapPointToNodeEdge(percentX, percentY, nodeBox) {
+        const point = percentPointToPixel(clamp(percentX, 0, 100), clamp(percentY, 0, 100));
+        const distances = {
+            left: Math.abs(point.x - nodeBox.left),
+            right: Math.abs(point.x - nodeBox.right),
+            top: Math.abs(point.y - nodeBox.top),
+            bottom: Math.abs(point.y - nodeBox.bottom),
+        };
+        const nearestSide = Object.entries(distances).sort((a, b) => a[1] - b[1])[0][0];
+
+        if (nearestSide === 'left') {
+            return {
+                x: pixelToPercentX(nodeBox.left + edgeOverlap),
+                y: pixelToPercentY(clamp(point.y, nodeBox.top + 4, nodeBox.bottom - 4)),
+            };
+        }
+
+        if (nearestSide === 'right') {
+            return {
+                x: pixelToPercentX(nodeBox.right - edgeOverlap),
+                y: pixelToPercentY(clamp(point.y, nodeBox.top + 4, nodeBox.bottom - 4)),
+            };
+        }
+
+        if (nearestSide === 'top') {
+            return {
+                x: pixelToPercentX(clamp(point.x, nodeBox.left + 4, nodeBox.right - 4)),
+                y: pixelToPercentY(nodeBox.top + edgeOverlap),
+            };
+        }
+
+        return {
+            x: pixelToPercentX(clamp(point.x, nodeBox.left + 4, nodeBox.right - 4)),
+            y: pixelToPercentY(nodeBox.bottom - edgeOverlap),
+        };
+    }
+
+    function detectHandleEdge(point, nodeBox) {
+        const pixelPoint = percentPointToPixel(point.percentX, point.percentY);
+        const distances = {
+            left: Math.abs(pixelPoint.x - nodeBox.left),
+            right: Math.abs(pixelPoint.x - nodeBox.right),
+            top: Math.abs(pixelPoint.y - nodeBox.top),
+            bottom: Math.abs(pixelPoint.y - nodeBox.bottom),
+        };
+
+        return Object.entries(distances).sort((a, b) => a[1] - b[1])[0][0];
     }
 
     function pixelToPercentX(pixel) {

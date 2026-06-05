@@ -6,6 +6,7 @@ use App\Models\MasterFlow;
 use App\Models\MasterFlowConnection;
 use App\Models\MasterFlowStep;
 use App\Models\MasterFlowStepChecklist;
+use App\Models\Role;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -53,6 +54,7 @@ class MasterFlowController extends Controller
 
         return view('master-flows.edit', [
             'flow' => $masterFlow,
+            'roles' => Role::query()->where('is_active', true)->orderBy('name')->get(),
         ]);
     }
 
@@ -137,9 +139,14 @@ class MasterFlowController extends Controller
             'position_x' => ['required', 'numeric', 'min:2', 'max:96'],
             'position_y' => ['required', 'numeric', 'min:4', 'max:96'],
             'sort_order' => ['required', 'integer', 'min:0'],
+            'allowed_role_codes' => ['nullable', 'array'],
+            'allowed_role_codes.*' => ['string', Rule::exists('roles', 'code')->where(fn ($query) => $query->where('is_active', true))],
         ]);
 
-        $masterFlow->steps()->create($validated);
+        $masterFlow->steps()->create([
+            ...$validated,
+            'allowed_role_codes' => array_values($validated['allowed_role_codes'] ?? []),
+        ]);
 
         return redirect()
             ->route('master-flows.edit', $masterFlow)
@@ -156,9 +163,14 @@ class MasterFlowController extends Controller
             'position_x' => ['required', 'numeric', 'min:2', 'max:96'],
             'position_y' => ['required', 'numeric', 'min:4', 'max:96'],
             'sort_order' => ['required', 'integer', 'min:0'],
+            'allowed_role_codes' => ['nullable', 'array'],
+            'allowed_role_codes.*' => ['string', Rule::exists('roles', 'code')->where(fn ($query) => $query->where('is_active', true))],
         ]);
 
-        $step->update($validated);
+        $step->update([
+            ...$validated,
+            'allowed_role_codes' => array_values($validated['allowed_role_codes'] ?? []),
+        ]);
 
         return redirect()
             ->route('master-flows.edit', $masterFlow)

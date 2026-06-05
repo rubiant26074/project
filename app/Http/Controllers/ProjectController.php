@@ -24,6 +24,7 @@ class ProjectController extends Controller
             'wo_number' => ['required', 'string', 'max:255', 'unique:projects,wo_number'],
             'client_name' => ['required', 'string', 'max:255'],
             'project_name' => ['required', 'string', 'max:255'],
+            'target_finish' => ['nullable', 'date'],
             'description' => ['nullable', 'string'],
             'master_flow_id' => ['required', 'exists:master_flows,id'],
         ]);
@@ -51,6 +52,7 @@ class ProjectController extends Controller
             'wo_number' => ['required', 'string', 'max:255', 'unique:projects,wo_number,' . $project->id],
             'client_name' => ['required', 'string', 'max:255'],
             'project_name' => ['required', 'string', 'max:255'],
+            'target_finish' => ['nullable', 'date'],
             'description' => ['nullable', 'string'],
         ]);
 

@@ -10,6 +10,7 @@ class ProjectProcessChecklist extends Model
     protected $fillable = [
         'project_process_id',
         'label',
+        'document_link',
         'is_done',
         'sort_order',
     ];

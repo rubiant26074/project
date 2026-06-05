@@ -29,7 +29,7 @@
         })->values();
     @endphp
 
-    <main class="page">
+    <main class="page" data-preserve-scroll-page>
         <div class="page-actions">
             <a class="back-link" href="{{ route('master-flows.index') }}">Kembali ke Master Flow</a>
         </div>
@@ -81,6 +81,7 @@
 
             <div
                 class="flow-wrapper flow-wrapper-editor"
+                data-preserve-scroll-container="master-flow-canvas"
                 data-flow-layout-editor
                 data-save-url="{{ route('master-flows.layout.update', $flow) }}"
                 data-steps='@json($layoutSteps)'
@@ -132,6 +133,21 @@
                             <label>Posisi Y</label>
                             <input name="position_y" type="number" min="4" max="96" step="0.1" value="12" required>
                         </div>
+                    </div>
+                    <div class="form-field">
+                        <label>Role Yang Boleh Update Proses Ini</label>
+                        <div class="role-permission-grid">
+                            @foreach ($roles as $role)
+                                <label class="role-permission-option">
+                                    <input type="checkbox" name="allowed_role_codes[]" value="{{ $role->code }}">
+                                    <span class="role-permission-copy">
+                                        <strong>{{ $role->name }}</strong>
+                                        <small>{{ strtoupper($role->code) }}</small>
+                                    </span>
+                                </label>
+                            @endforeach
+                        </div>
+                        <div class="info-box">Jika tidak dipilih, semua role yang memang punya hak update proses tetap bisa update.</div>
                     </div>
                     <button class="toolbar-button toolbar-button-primary" type="submit">Tambah Step</button>
                 </form>
@@ -221,6 +237,21 @@
                                         <label>Y</label>
                                         <input name="position_y" type="number" min="4" max="96" step="0.1" value="{{ $step->position_y }}" required>
                                     </div>
+                                </div>
+                                <div class="form-field">
+                                    <label>Role Yang Boleh Update Proses Ini</label>
+                                    <div class="role-permission-grid">
+                                        @foreach ($roles as $role)
+                                            <label class="role-permission-option">
+                                                <input type="checkbox" name="allowed_role_codes[]" value="{{ $role->code }}" @checked(in_array($role->code, $step->allowed_role_codes ?? [], true))>
+                                                <span class="role-permission-copy">
+                                                    <strong>{{ $role->name }}</strong>
+                                                    <small>{{ strtoupper($role->code) }}</small>
+                                                </span>
+                                            </label>
+                                        @endforeach
+                                    </div>
+                                    <div class="info-box">Jika kosong, proses ini bisa diupdate semua role yang memang memiliki izin update proses.</div>
                                 </div>
                                 <button class="toolbar-button" type="submit">Update Step</button>
                             </form>

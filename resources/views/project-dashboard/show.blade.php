@@ -1,6 +1,14 @@
 @extends('layouts.app')
 
 @section('content')
+    @php
+        $statusIcons = [
+            'close' => '<svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="29"></circle><rect x="18" y="18" width="24" height="28" rx="4"></rect><path d="M24 33l6 6 12-14"></path></svg>',
+            'proses' => '<svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="29"></circle><path d="M28 13h8l1 5a17 17 0 0 1 5 2l4-3 6 6-3 4a17 17 0 0 1 2 5l5 1v8l-5 1a17 17 0 0 1-2 5l3 4-6 6-4-3a17 17 0 0 1-5 2l-1 5h-8l-1-5a17 17 0 0 1-5-2l-4 3-6-6 3-4a17 17 0 0 1-2-5l-5-1v-8l5-1a17 17 0 0 1 2-5l-3-4 6-6 4 3a17 17 0 0 1 5-2z"></path><circle cx="32" cy="37" r="7"></circle><path d="M46 39h3l1 3 3 1v3l-3 1-1 3h-3l-1-3-3-1v-3l3-1z"></path><circle cx="47.5" cy="44.5" r="2.5"></circle></svg>',
+            'open' => '<svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="29"></circle><path d="M22 22l20 20"></path><path d="M42 22L22 42"></path></svg>',
+        ];
+    @endphp
+
     <main class="page">
         <div class="page-actions">
             <a class="back-link" href="{{ route('dashboard') }}">Kembali ke Semua Project</a>
@@ -39,8 +47,10 @@
         </section>
 
         <div class="toolbar-group">
-            <a class="toolbar-button" href="{{ route('projects.edit', $project) }}">Edit Project</a>
-            @if ($project->masterFlow)
+            @if (auth()->user()->canManageProjects())
+                <a class="toolbar-button" href="{{ route('projects.edit', $project) }}">Edit Project</a>
+            @endif
+            @if ($project->masterFlow && auth()->user()->canManageMasterFlows())
                 <a class="toolbar-button" href="{{ route('master-flows.edit', $project->masterFlow) }}">Lihat Master Flow</a>
             @endif
         </div>
@@ -62,6 +72,7 @@
                     </defs>
                     @foreach ($project->connections as $connection)
                         @php
+                            $edgeOverlap = 4;
                             $fromCenterX = ($connection->fromProcess->position_x * 12);
                             $fromCenterY = ($connection->fromProcess->position_y * 7.6) + 43;
                             $fromLeft = $fromCenterX - 85;
@@ -88,28 +99,28 @@
                                 if ($isVerticalPriority) {
                                     if ($toCenterY >= $fromCenterY) {
                                         $defaultStartX = $fromCenterX;
-                                        $defaultStartY = $fromBottom;
+                                        $defaultStartY = $fromBottom - $edgeOverlap;
                                         $defaultEndX = $toCenterX;
-                                        $defaultEndY = $toTop;
+                                        $defaultEndY = $toTop + $edgeOverlap;
                                     } else {
                                         $defaultStartX = $fromCenterX;
-                                        $defaultStartY = $fromTop;
+                                        $defaultStartY = $fromTop + $edgeOverlap;
                                         $defaultEndX = $toCenterX;
-                                        $defaultEndY = $toBottom;
+                                        $defaultEndY = $toBottom - $edgeOverlap;
                                     }
 
                                     $defaultMiddleX = $defaultStartX;
                                     $defaultMiddleY = $defaultStartY + (($defaultEndY - $defaultStartY) / 2);
                                 } else {
                                     if ($toCenterX >= $fromCenterX) {
-                                        $defaultStartX = $fromRight;
+                                        $defaultStartX = $fromRight - $edgeOverlap;
                                         $defaultStartY = $fromCenterY;
-                                        $defaultEndX = $toLeft;
+                                        $defaultEndX = $toLeft + $edgeOverlap;
                                         $defaultEndY = $toCenterY;
                                     } else {
-                                        $defaultStartX = $fromLeft;
+                                        $defaultStartX = $fromLeft + $edgeOverlap;
                                         $defaultStartY = $fromCenterY;
-                                        $defaultEndX = $toRight;
+                                        $defaultEndX = $toRight - $edgeOverlap;
                                         $defaultEndY = $toCenterY;
                                     }
 
@@ -147,15 +158,15 @@
                                 if ($isVerticalPriority) {
                                     if ($dy >= 0) {
                                         $startX = $fromCenterX;
-                                        $startY = $fromBottom;
+                                        $startY = $fromBottom - $edgeOverlap;
                                         $endX = $toCenterX;
-                                        $endY = $toTop;
+                                        $endY = $toTop + $edgeOverlap;
                                         $midY = $startY + (($endY - $startY) / 2);
                                     } else {
                                         $startX = $fromCenterX;
-                                        $startY = $fromTop;
+                                        $startY = $fromTop + $edgeOverlap;
                                         $endX = $toCenterX;
-                                        $endY = $toBottom;
+                                        $endY = $toBottom - $edgeOverlap;
                                         $midY = $endY + (($startY - $endY) / 2);
                                     }
 
@@ -172,14 +183,14 @@
                                     );
                                 } else {
                                     if ($dx >= 0) {
-                                        $startX = $fromRight;
+                                        $startX = $fromRight - $edgeOverlap;
                                         $startY = $fromCenterY;
-                                        $endX = $toLeft;
+                                        $endX = $toLeft + $edgeOverlap;
                                         $endY = $toCenterY;
                                     } else {
-                                        $startX = $fromLeft;
+                                        $startX = $fromLeft + $edgeOverlap;
                                         $startY = $fromCenterY;
-                                        $endX = $toRight;
+                                        $endX = $toRight - $edgeOverlap;
                                         $endY = $toCenterY;
                                     }
 
@@ -212,6 +223,7 @@
                         <span class="flow-node-badge">{{ $process->progress }}%</span>
                         <strong>{{ $process->name }}</strong>
                         <small>{{ $process->completed_checklists }}/{{ $process->total_checklists }} checklist</small>
+                        <span class="flow-node-status-icon flow-node-status-icon-{{ $process->status }}">{!! $statusIcons[$process->status] ?? $statusIcons['open'] !!}</span>
                     </a>
                 @endforeach
             </div>

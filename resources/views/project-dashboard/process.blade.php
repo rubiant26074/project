@@ -19,6 +19,19 @@
             </div>
         </section>
 
+        @php
+            $allowedRoles = $process->allowed_role_codes ?? [];
+            $canUpdateThisProcess = auth()->user()->canUpdateProcess($process);
+        @endphp
+
+        @if (! $canUpdateThisProcess)
+            <div class="flash-message flash-message-info">
+                Proses ini hanya bisa diupdate oleh role:
+                <strong>{{ empty($allowedRoles) ? 'role updater standar' : strtoupper(implode(', ', $allowedRoles)) }}</strong>.
+                Akun Anda saat ini hanya memiliki akses lihat.
+            </div>
+        @endif
+
         <section class="process-layout process-layout-expanded">
             <article class="process-card">
                 <div class="process-card-head">
@@ -50,31 +63,53 @@
                 <ul class="checklist">
                     @foreach ($process->checklists as $item)
                         <li class="checklist-item {{ $item->is_done ? 'is-done' : 'is-pending' }}">
-                            <form method="POST" action="{{ route('projects.processes.checklists.update', [$project, $process, $item]) }}" class="checklist-form">
-                                @csrf
-                                @method('PUT')
-                                <input type="hidden" name="label" value="{{ $item->label }}">
-                                <input type="hidden" name="sort_order" value="{{ $item->sort_order }}">
-                                <label class="checkbox-inline checkbox-inline-grow">
-                                    <input type="checkbox" name="is_done" value="1" @checked($item->is_done) onchange="this.form.submit()">
-                                    <span>{{ $item->label }}</span>
-                                </label>
-                            </form>
-                            <form method="POST" action="{{ route('projects.processes.checklists.destroy', [$project, $process, $item]) }}">
-                                @csrf
-                                @method('DELETE')
-                                <button class="toolbar-button toolbar-button-danger toolbar-button-small" type="submit">Hapus</button>
-                            </form>
+                            @if ($canUpdateThisProcess)
+                                <form method="POST" action="{{ route('projects.processes.checklists.update', [$project, $process, $item]) }}" class="checklist-form" data-checklist-link-form>
+                                    @csrf
+                                    @method('PUT')
+                                    <input type="hidden" name="label" value="{{ $item->label }}">
+                                    <input type="hidden" name="sort_order" value="{{ $item->sort_order }}">
+                                    <input type="hidden" name="document_link" value="{{ $item->document_link }}" data-document-link-input>
+                                    <label class="checkbox-inline checkbox-inline-grow">
+                                        <input type="checkbox" name="is_done" value="1" @checked($item->is_done) data-checklist-toggle>
+                                        <span class="checklist-copy">
+                                            <span>{{ $item->label }}</span>
+                                            @if ($item->document_link)
+                                                <a class="document-link-badge" href="{{ $item->document_link }}" target="_blank" rel="noopener noreferrer">Link Dokumen</a>
+                                            @endif
+                                        </span>
+                                    </label>
+                                </form>
+                                <form method="POST" action="{{ route('projects.processes.checklists.destroy', [$project, $process, $item]) }}">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button class="toolbar-button toolbar-button-danger toolbar-button-small" type="submit">Hapus</button>
+                                </form>
+                            @else
+                                <div class="checklist-form">
+                                    <label class="checkbox-inline checkbox-inline-grow">
+                                        <input type="checkbox" @checked($item->is_done) disabled>
+                                        <span class="checklist-copy">
+                                            <span>{{ $item->label }}</span>
+                                            @if ($item->document_link)
+                                                <a class="document-link-badge" href="{{ $item->document_link }}" target="_blank" rel="noopener noreferrer">Link Dokumen</a>
+                                            @endif
+                                        </span>
+                                    </label>
+                                </div>
+                            @endif
                         </li>
                     @endforeach
                 </ul>
 
-                <form method="POST" action="{{ route('projects.processes.checklists.store', [$project, $process]) }}" class="form-inline">
-                    @csrf
-                    <input name="label" type="text" placeholder="Tambah checklist baru" required>
-                    <input name="sort_order" type="number" min="0" value="{{ $process->checklists->count() + 1 }}" required>
-                    <button class="toolbar-button toolbar-button-primary toolbar-button-small" type="submit">Tambah</button>
-                </form>
+                @if ($canUpdateThisProcess)
+                    <form method="POST" action="{{ route('projects.processes.checklists.store', [$project, $process]) }}" class="form-inline">
+                        @csrf
+                        <input name="label" type="text" placeholder="Tambah checklist baru" required>
+                        <input name="sort_order" type="number" min="0" value="{{ $process->checklists->count() + 1 }}" required>
+                        <button class="toolbar-button toolbar-button-primary toolbar-button-small" type="submit">Tambah</button>
+                    </form>
+                @endif
             </article>
 
             <article class="process-card">
@@ -85,14 +120,16 @@
                     </div>
                 </div>
 
-                <form method="POST" action="{{ route('projects.processes.comments.store', [$project, $process]) }}" class="form-stack">
-                    @csrf
-                    <div class="form-field">
-                        <label for="comment">Komentar</label>
-                        <textarea id="comment" name="comment" rows="4" placeholder="Tulis update, catatan kendala, atau arahan proses..." required></textarea>
-                    </div>
-                    <button class="toolbar-button toolbar-button-primary toolbar-button-small" type="submit">Simpan Komentar</button>
-                </form>
+                @if ($canUpdateThisProcess)
+                    <form method="POST" action="{{ route('projects.processes.comments.store', [$project, $process]) }}" class="form-stack">
+                        @csrf
+                        <div class="form-field">
+                            <label for="comment">Komentar</label>
+                            <textarea id="comment" name="comment" rows="4" placeholder="Tulis update, catatan kendala, atau arahan proses..." required></textarea>
+                        </div>
+                        <button class="toolbar-button toolbar-button-primary toolbar-button-small" type="submit">Simpan Komentar</button>
+                    </form>
+                @endif
 
                 <div class="activity-feed">
                     @forelse ($process->comments as $comment)
@@ -102,7 +139,7 @@
                                     <strong>{{ $comment->user?->name ?? 'System' }}</strong>
                                     <span>{{ $comment->created_at->format('d M Y H:i') }}</span>
                                 </div>
-                                @if (auth()->user()->isAdmin() || $comment->user_id === auth()->id())
+                                @if (auth()->user()->canDeleteProcessComment($comment->user_id) && $canUpdateThisProcess)
                                     <form method="POST" action="{{ route('projects.processes.comments.destroy', [$project, $process, $comment]) }}">
                                         @csrf
                                         @method('DELETE')

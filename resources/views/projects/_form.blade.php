@@ -17,7 +17,18 @@
             <label for="project_name">Nama Project</label>
             <input id="project_name" name="project_name" type="text" value="{{ old('project_name', $project->project_name ?? '') }}" required>
         </div>
+        <div class="form-field">
+            <label for="target_finish">Target Finish</label>
+            <input
+                id="target_finish"
+                name="target_finish"
+                type="date"
+                value="{{ old('target_finish', ($project->target_finish ?? null)?->format('Y-m-d') ?? '') }}"
+            >
+        </div>
+    </div>
 
+    <div class="form-grid">
         @if (! isset($project))
             <div class="form-field">
                 <label for="master_flow_id">Master Flow</label>

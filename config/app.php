@@ -13,7 +13,9 @@ return [
     |
     */
 
-    'name' => env('APP_NAME', 'Laravel'),
+    'name' => env('APP_NAME', 'PM Project Tracker'),
+
+    'version' => env('APP_VERSION', 'v1.0.0'),
 
     /*
     |--------------------------------------------------------------------------

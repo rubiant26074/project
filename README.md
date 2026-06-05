@@ -30,8 +30,7 @@ php artisan key:generate
 - Atau bangun ulang database dari migration dan seeder:
 
 ```bash
-php artisan migrate
-php artisan db:seed
+php artisan migrate:fresh --seed
 ```
 
 6. Jalankan asset front-end:
@@ -46,6 +45,22 @@ npm run build
 composer run dev
 ```
 
+## Setup Cepat
+
+Kalau ingin langsung menyiapkan project dari nol dengan data demo, cukup jalankan:
+
+```bash
+composer run setup
+```
+
+Perintah ini akan:
+- install dependency PHP dan Node
+- membuat `.env` bila belum ada
+- membuat file SQLite bila belum ada
+- generate app key
+- rebuild database + seed akun demo
+- build asset front-end
+
 ## Akun Login Default
 
 - Admin: `admin@project-control.local` / `admin12345`
@@ -56,6 +71,7 @@ composer run dev
 - File SQLite contoh tersedia di `database/database.sqlite`
 - Struktur database tetap tersedia lewat migration di `database/migrations`
 - Data awal tetap tersedia lewat seeder di `database/seeders/DatabaseSeeder.php`
+- Bila memakai `composer run setup`, database akan dibangun ulang dari migration dan seeder
 
 ---
 

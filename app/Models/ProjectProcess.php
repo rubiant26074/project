@@ -20,6 +20,7 @@ class ProjectProcess extends Model
         'position_x',
         'position_y',
         'sort_order',
+        'allowed_role_codes',
     ];
 
     protected function casts(): array
@@ -27,6 +28,7 @@ class ProjectProcess extends Model
         return [
             'position_x' => 'float',
             'position_y' => 'float',
+            'allowed_role_codes' => 'array',
         ];
     }
 

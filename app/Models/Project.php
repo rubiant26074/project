@@ -13,9 +13,14 @@ class Project extends Model
         'wo_number',
         'client_name',
         'project_name',
+        'target_finish',
         'description',
         'status',
         'progress',
+    ];
+
+    protected $casts = [
+        'target_finish' => 'date',
     ];
 
     public function masterFlow(): BelongsTo

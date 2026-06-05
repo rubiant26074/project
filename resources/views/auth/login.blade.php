@@ -1,17 +1,15 @@
 @extends('layouts.app')
 
 @section('content')
-    <main class="page page-narrow">
-        <section class="login-panel">
-            <div class="login-panel-copy">
+    <main class="auth-page">
+        <section class="auth-card">
+            <div class="auth-branding">
                 <p class="eyebrow">Secure Access</p>
-                <h1>Masuk ke Project Control Manager</h1>
-                <p class="hero-copy">
-                    Login sebagai admin atau user untuk membuka dashboard project, flow proses, checklist, dan histori progress.
-                </p>
+                <h1>{{ config('app.name') }}</h1>
+                <p class="auth-version">Versi {{ config('app.version') }}</p>
             </div>
 
-            <form method="POST" action="{{ route('login.store') }}" class="panel-card form-stack">
+            <form method="POST" action="{{ route('login.store') }}" class="form-stack">
                 @csrf
                 <div class="form-field">
                     <label for="email">Email</label>
@@ -30,10 +28,9 @@
 
                 <button class="toolbar-button toolbar-button-primary" type="submit">Masuk</button>
 
-                <div class="info-box">
-                    <strong>Akun demo</strong>
-                    <p>Admin: <code>admin@project-control.local</code> / <code>admin12345</code></p>
-                    <p>User: <code>user@project-control.local</code> / <code>user12345</code></p>
+                <div class="auth-helper">
+                    <span>Belum punya akun?</span>
+                    <a class="inline-link" href="{{ route('register') }}">Daftar user baru</a>
                 </div>
             </form>
         </section>

@@ -15,6 +15,7 @@ class ProjectProcessChecklistController extends Controller
     public function store(Request $request, Project $project, ProjectProcess $process, ProjectProgressService $progressService, ProjectProcessActivityService $activityService): RedirectResponse
     {
         abort_unless($process->project_id === $project->id, 404);
+        abort_unless($request->user()?->canUpdateProcess($process), 403);
 
         $validated = $request->validate([
             'label' => ['required', 'string', 'max:255'],
@@ -23,6 +24,7 @@ class ProjectProcessChecklistController extends Controller
 
         $checklist = $process->checklists()->create([
             ...$validated,
+            'document_link' => null,
             'is_done' => false,
         ]);
 
@@ -41,19 +43,31 @@ class ProjectProcessChecklistController extends Controller
     public function update(Request $request, Project $project, ProjectProcess $process, ProjectProcessChecklist $checklist, ProjectProgressService $progressService): RedirectResponse
     {
         abort_unless($process->project_id === $project->id && $checklist->project_process_id === $process->id, 404);
+        abort_unless($request->user()?->canUpdateProcess($process), 403);
 
         $validated = $request->validate([
             'label' => ['required', 'string', 'max:255'],
             'sort_order' => ['required', 'integer', 'min:0'],
             'is_done' => ['nullable', 'boolean'],
+            'document_link' => ['nullable', 'url', 'max:2048'],
         ]);
 
+        $isDone = (bool) ($validated['is_done'] ?? false);
+
+        if ($isDone && blank($validated['document_link'] ?? null)) {
+            return redirect()
+                ->route('projects.processes.show', [$project, $process])
+                ->withErrors(['document_link' => 'Link dokumen wajib diisi saat checklist ditandai selesai.']);
+        }
+
         $previousDone = $checklist->is_done;
+        $previousDocumentLink = $checklist->document_link;
 
         $checklist->update([
             'label' => $validated['label'],
+            'document_link' => $validated['document_link'] ?? null,
             'sort_order' => $validated['sort_order'],
-            'is_done' => (bool) ($validated['is_done'] ?? false),
+            'is_done' => $isDone,
         ]);
 
         if ($previousDone !== $checklist->is_done) {
@@ -71,6 +85,19 @@ class ProjectProcessChecklistController extends Controller
             );
         }
 
+        if ($previousDocumentLink !== $checklist->document_link && filled($checklist->document_link)) {
+            app(ProjectProcessActivityService::class)->log(
+                $process,
+                $request->user(),
+                'checklist_document_linked',
+                sprintf('Link dokumen untuk checklist "%s" diperbarui.', $checklist->label),
+                [
+                    'checklist_id' => $checklist->id,
+                    'document_link' => $checklist->document_link,
+                ],
+            );
+        }
+
         $progressService->syncFromChecklist($process->fresh('checklists', 'project.processes'), $request->user());
 
         return redirect()
@@ -81,6 +108,7 @@ class ProjectProcessChecklistController extends Controller
     public function destroy(Project $project, ProjectProcess $process, ProjectProcessChecklist $checklist, ProjectProgressService $progressService, ProjectProcessActivityService $activityService): RedirectResponse
     {
         abort_unless($process->project_id === $project->id && $checklist->project_process_id === $process->id, 404);
+        abort_unless(request()->user()?->canUpdateProcess($process), 403);
         $activityService->log($process, request()->user(), 'checklist_deleted', 'Checklist proses dihapus.', [
             'checklist_id' => $checklist->id,
             'label' => $checklist->label,

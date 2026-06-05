@@ -42,6 +42,7 @@ class ProjectFlowBuilder
                     'position_x' => $step->position_x,
                     'position_y' => $step->position_y,
                     'sort_order' => $step->sort_order,
+                    'allowed_role_codes' => $step->allowed_role_codes,
                 ]);
 
                 foreach ($step->checklistTemplates as $template) {
@@ -108,6 +109,7 @@ class ProjectFlowBuilder
                         'position_x' => $step->position_x,
                         'position_y' => $step->position_y,
                         'sort_order' => $step->sort_order,
+                        'allowed_role_codes' => $step->allowed_role_codes,
                     ]);
 
                     foreach ($step->checklistTemplates as $template) {
@@ -124,6 +126,7 @@ class ProjectFlowBuilder
                         'position_x' => $step->position_x,
                         'position_y' => $step->position_y,
                         'sort_order' => $step->sort_order,
+                        'allowed_role_codes' => $step->allowed_role_codes,
                     ]);
                 }
 
