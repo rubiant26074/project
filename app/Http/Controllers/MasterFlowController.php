@@ -155,7 +155,7 @@ class MasterFlowController extends Controller
 
     public function updateStep(Request $request, MasterFlow $masterFlow, MasterFlowStep $step): RedirectResponse
     {
-        abort_unless($step->master_flow_id === $masterFlow->id, 404);
+        abort_unless((int) $step->master_flow_id === (int) $masterFlow->getKey(), 404);
 
         $validated = $request->validate([
             'code' => ['required', 'alpha_dash', Rule::unique('master_flow_steps', 'code')->where(fn ($query) => $query->where('master_flow_id', $masterFlow->id))->ignore($step->id)],
@@ -179,7 +179,7 @@ class MasterFlowController extends Controller
 
     public function destroyStep(MasterFlow $masterFlow, MasterFlowStep $step): RedirectResponse
     {
-        abort_unless($step->master_flow_id === $masterFlow->id, 404);
+        abort_unless((int) $step->master_flow_id === (int) $masterFlow->getKey(), 404);
         $step->delete();
 
         return redirect()
@@ -207,7 +207,7 @@ class MasterFlowController extends Controller
 
     public function destroyConnection(MasterFlow $masterFlow, MasterFlowConnection $connection): RedirectResponse
     {
-        abort_unless($connection->master_flow_id === $masterFlow->id, 404);
+        abort_unless((int) $connection->master_flow_id === (int) $masterFlow->getKey(), 404);
         $connection->delete();
 
         return redirect()
@@ -217,7 +217,7 @@ class MasterFlowController extends Controller
 
     public function storeChecklist(Request $request, MasterFlow $masterFlow, MasterFlowStep $step): RedirectResponse
     {
-        abort_unless($step->master_flow_id === $masterFlow->id, 404);
+        abort_unless((int) $step->master_flow_id === (int) $masterFlow->getKey(), 404);
 
         $validated = $request->validate([
             'label' => ['required', 'string', 'max:255'],
@@ -233,7 +233,11 @@ class MasterFlowController extends Controller
 
     public function updateChecklist(Request $request, MasterFlow $masterFlow, MasterFlowStep $step, MasterFlowStepChecklist $checklist): RedirectResponse
     {
-        abort_unless($step->master_flow_id === $masterFlow->id && $checklist->master_flow_step_id === $step->id, 404);
+        abort_unless(
+            (int) $step->master_flow_id === (int) $masterFlow->getKey()
+            && (int) $checklist->master_flow_step_id === (int) $step->getKey(),
+            404,
+        );
 
         $validated = $request->validate([
             'label' => ['required', 'string', 'max:255'],
@@ -249,7 +253,11 @@ class MasterFlowController extends Controller
 
     public function destroyChecklist(MasterFlow $masterFlow, MasterFlowStep $step, MasterFlowStepChecklist $checklist): RedirectResponse
     {
-        abort_unless($step->master_flow_id === $masterFlow->id && $checklist->master_flow_step_id === $step->id, 404);
+        abort_unless(
+            (int) $step->master_flow_id === (int) $masterFlow->getKey()
+            && (int) $checklist->master_flow_step_id === (int) $step->getKey(),
+            404,
+        );
         $checklist->delete();
 
         return redirect()

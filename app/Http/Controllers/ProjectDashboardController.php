@@ -46,7 +46,7 @@ class ProjectDashboardController extends Controller
 
     public function showProcess(Project $project, ProjectProcess $process): View
     {
-        abort_unless($process->project_id === $project->id, 404);
+        abort_unless((int) $process->project_id === (int) $project->getKey(), 404);
         $project->load('processes');
         $process->load([
             'checklists',

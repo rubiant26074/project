@@ -14,7 +14,7 @@ class ProjectProcessChecklistController extends Controller
 {
     public function store(Request $request, Project $project, ProjectProcess $process, ProjectProgressService $progressService, ProjectProcessActivityService $activityService): RedirectResponse
     {
-        abort_unless($process->project_id === $project->id, 404);
+        abort_unless((int) $process->project_id === (int) $project->getKey(), 404);
         abort_unless($request->user()?->canUpdateProcess($process), 403);
 
         $validated = $request->validate([
@@ -42,7 +42,11 @@ class ProjectProcessChecklistController extends Controller
 
     public function update(Request $request, Project $project, ProjectProcess $process, ProjectProcessChecklist $checklist, ProjectProgressService $progressService): RedirectResponse
     {
-        abort_unless($process->project_id === $project->id && $checklist->project_process_id === $process->id, 404);
+        abort_unless(
+            (int) $process->project_id === (int) $project->getKey()
+            && (int) $checklist->project_process_id === (int) $process->getKey(),
+            404,
+        );
         abort_unless($request->user()?->canUpdateProcess($process), 403);
 
         $validated = $request->validate([
@@ -107,7 +111,11 @@ class ProjectProcessChecklistController extends Controller
 
     public function destroy(Project $project, ProjectProcess $process, ProjectProcessChecklist $checklist, ProjectProgressService $progressService, ProjectProcessActivityService $activityService): RedirectResponse
     {
-        abort_unless($process->project_id === $project->id && $checklist->project_process_id === $process->id, 404);
+        abort_unless(
+            (int) $process->project_id === (int) $project->getKey()
+            && (int) $checklist->project_process_id === (int) $process->getKey(),
+            404,
+        );
         abort_unless(request()->user()?->canUpdateProcess($process), 403);
         $activityService->log($process, request()->user(), 'checklist_deleted', 'Checklist proses dihapus.', [
             'checklist_id' => $checklist->id,
