@@ -1761,6 +1761,45 @@ body[data-theme='control-room'] .admin-table textarea {
     gap: 18px;
 }
 
+.process-target-panel {
+    margin-bottom: 24px;
+}
+
+.process-target-form,
+.process-target-readonly {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(160px, 1fr)) auto;
+    gap: 12px;
+    align-items: end;
+}
+
+.process-target-readonly {
+    grid-template-columns: repeat(2, minmax(160px, max-content));
+    align-items: center;
+}
+
+.process-target-form label {
+    display: grid;
+    gap: 6px;
+}
+
+.process-target-form span,
+.process-target-readonly span {
+    color: var(--muted);
+    font-size: 0.78rem;
+    font-weight: 800;
+}
+
+.process-target-form input {
+    min-height: 42px;
+    border: 1px solid rgba(43, 57, 72, 0.16);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.95);
+    color: var(--ink);
+    font: inherit;
+    padding: 0 12px;
+}
+
 .process-card-head {
     display: flex;
     justify-content: space-between;
@@ -1829,6 +1868,46 @@ body[data-theme='control-room'] .admin-table textarea {
 .checklist-copy {
     display: grid;
     gap: 8px;
+}
+
+.checklist-edit-row {
+    display: grid;
+    gap: 12px;
+    width: 100%;
+}
+
+.checklist-target-grid,
+.task-target-form {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(130px, 1fr)) auto;
+    gap: 10px;
+    align-items: end;
+}
+
+.checklist-target-grid label,
+.task-target-form label {
+    display: grid;
+    gap: 5px;
+}
+
+.checklist-target-grid span,
+.task-target-form span,
+.checklist-target-meta {
+    color: var(--muted);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+}
+
+.checklist-target-grid input,
+.task-target-form input {
+    min-height: 38px;
+    border: 1px solid rgba(43, 57, 72, 0.16);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.94);
+    color: var(--ink);
+    font: inherit;
+    padding: 0 10px;
 }
 
 .document-link-badge {
@@ -1998,7 +2077,11 @@ body[data-theme='control-room'] .admin-table textarea {
     .form-grid-3,
     .form-inline,
     .list-card-form,
-    .filter-panel {
+    .filter-panel,
+    .checklist-target-grid,
+    .task-target-form,
+    .process-target-form,
+    .process-target-readonly {
         grid-template-columns: 1fr;
     }
 

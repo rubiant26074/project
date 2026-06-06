@@ -231,6 +231,7 @@
                         <span class="flow-node-badge">{{ $process->progress }}%</span>
                         <strong>{{ $process->name }}</strong>
                         <small>{{ $process->completed_checklists }}/{{ $process->total_checklists }} checklist</small>
+                        <small>Target {{ $process->target_start?->format('d M Y') ?? '-' }} s/d {{ $process->target_finish?->format('d M Y') ?? '-' }}</small>
                         <span class="flow-node-status-icon flow-node-status-icon-{{ $process->status }}">{!! $statusIcons[$process->status] ?? $statusIcons['open'] !!}</span>
                     </a>
                 @endforeach

@@ -54,6 +54,8 @@ class ProjectProcessChecklistController extends Controller
             'sort_order' => ['required', 'integer', 'min:0'],
             'is_done' => ['nullable', 'boolean'],
             'document_link' => ['nullable', 'url', 'max:2048'],
+            'target_start' => ['nullable', 'date'],
+            'target_finish' => ['nullable', 'date', 'after_or_equal:target_start'],
         ]);
 
         $isDone = (bool) ($validated['is_done'] ?? false);
@@ -66,10 +68,14 @@ class ProjectProcessChecklistController extends Controller
 
         $previousDone = $checklist->is_done;
         $previousDocumentLink = $checklist->document_link;
+        $previousTargetStart = $checklist->target_start?->toDateString();
+        $previousTargetFinish = $checklist->target_finish?->toDateString();
 
         $checklist->update([
             'label' => $validated['label'],
             'document_link' => $validated['document_link'] ?? null,
+            'target_start' => $validated['target_start'] ?? null,
+            'target_finish' => $validated['target_finish'] ?? null,
             'sort_order' => $validated['sort_order'],
             'is_done' => $isDone,
         ]);
@@ -85,6 +91,23 @@ class ProjectProcessChecklistController extends Controller
                 [
                     'checklist_id' => $checklist->id,
                     'is_done' => $checklist->is_done,
+                ],
+            );
+        }
+
+        if (
+            $previousTargetStart !== $checklist->target_start?->toDateString()
+            || $previousTargetFinish !== $checklist->target_finish?->toDateString()
+        ) {
+            app(ProjectProcessActivityService::class)->log(
+                $process,
+                $request->user(),
+                'checklist_target_updated',
+                sprintf('Target tanggal checklist "%s" diperbarui.', $checklist->label),
+                [
+                    'checklist_id' => $checklist->id,
+                    'target_start' => $checklist->target_start?->toDateString(),
+                    'target_finish' => $checklist->target_finish?->toDateString(),
                 ],
             );
         }

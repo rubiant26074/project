@@ -22,7 +22,38 @@
         @php
             $allowedRoles = $process->allowed_role_codes ?? [];
             $canUpdateThisProcess = auth()->user()->canUpdateProcess($process);
+            $canUpdateProcessTargets = auth()->user()->canUpdateProcessTargets();
         @endphp
+
+        <section class="panel-card process-target-panel">
+            <div class="section-head section-head-tight">
+                <div>
+                    <p class="eyebrow">Target Proses</p>
+                    <h2>Target Mulai dan Target Selesai</h2>
+                </div>
+                <span class="inline-meta">Diisi oleh PM</span>
+            </div>
+            @if ($canUpdateProcessTargets)
+                <form method="POST" action="{{ route('projects.processes.target.update', [$project, $process]) }}" class="process-target-form">
+                    @csrf
+                    @method('PUT')
+                    <label>
+                        <span>Target Mulai</span>
+                        <input type="date" name="target_start" value="{{ $process->target_start?->format('Y-m-d') }}">
+                    </label>
+                    <label>
+                        <span>Target Selesai</span>
+                        <input type="date" name="target_finish" value="{{ $process->target_finish?->format('Y-m-d') }}">
+                    </label>
+                    <button class="toolbar-button toolbar-button-primary toolbar-button-small" type="submit">Simpan Target Proses</button>
+                </form>
+            @else
+                <div class="process-target-readonly">
+                    <span>Target mulai: <strong>{{ $process->target_start?->format('d M Y') ?? '-' }}</strong></span>
+                    <span>Target selesai: <strong>{{ $process->target_finish?->format('d M Y') ?? '-' }}</strong></span>
+                </div>
+            @endif
+        </section>
 
         @if (! $canUpdateThisProcess)
             <div class="flash-message flash-message-info">
@@ -70,15 +101,28 @@
                                     <input type="hidden" name="label" value="{{ $item->label }}">
                                     <input type="hidden" name="sort_order" value="{{ $item->sort_order }}">
                                     <input type="hidden" name="document_link" value="{{ $item->document_link }}" data-document-link-input>
-                                    <label class="checkbox-inline checkbox-inline-grow">
-                                        <input type="checkbox" name="is_done" value="1" @checked($item->is_done) data-checklist-toggle>
-                                        <span class="checklist-copy">
-                                            <span>{{ $item->label }}</span>
-                                            @if ($item->document_link)
-                                                <a class="document-link-badge" href="{{ $item->document_link }}" target="_blank" rel="noopener noreferrer">Link Dokumen</a>
-                                            @endif
-                                        </span>
-                                    </label>
+                                    <div class="checklist-edit-row">
+                                        <label class="checkbox-inline checkbox-inline-grow">
+                                            <input type="checkbox" name="is_done" value="1" @checked($item->is_done) data-checklist-toggle>
+                                            <span class="checklist-copy">
+                                                <span>{{ $item->label }}</span>
+                                                @if ($item->document_link)
+                                                    <a class="document-link-badge" href="{{ $item->document_link }}" target="_blank" rel="noopener noreferrer">Link Dokumen</a>
+                                                @endif
+                                            </span>
+                                        </label>
+                                        <div class="checklist-target-grid">
+                                            <label>
+                                                <span>Target Mulai</span>
+                                                <input type="date" name="target_start" value="{{ $item->target_start?->format('Y-m-d') }}">
+                                            </label>
+                                            <label>
+                                                <span>Target Selesai</span>
+                                                <input type="date" name="target_finish" value="{{ $item->target_finish?->format('Y-m-d') }}">
+                                            </label>
+                                            <button class="toolbar-button toolbar-button-small" type="submit">Update Target</button>
+                                        </div>
+                                    </div>
                                 </form>
                                 <form method="POST" action="{{ route('projects.processes.checklists.destroy', [$project, $process, $item]) }}">
                                     @csrf
@@ -94,6 +138,10 @@
                                             @if ($item->document_link)
                                                 <a class="document-link-badge" href="{{ $item->document_link }}" target="_blank" rel="noopener noreferrer">Link Dokumen</a>
                                             @endif
+                                            <span class="checklist-target-meta">
+                                                Target mulai: {{ $item->target_start?->format('d M Y') ?? '-' }}
+                                                | Target selesai: {{ $item->target_finish?->format('d M Y') ?? '-' }}
+                                            </span>
                                         </span>
                                     </label>
                                 </div>

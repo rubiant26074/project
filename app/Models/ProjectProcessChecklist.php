@@ -11,6 +11,8 @@ class ProjectProcessChecklist extends Model
         'project_process_id',
         'label',
         'document_link',
+        'target_start',
+        'target_finish',
         'is_done',
         'sort_order',
     ];
@@ -19,6 +21,8 @@ class ProjectProcessChecklist extends Model
     {
         return [
             'is_done' => 'boolean',
+            'target_start' => 'date',
+            'target_finish' => 'date',
         ];
     }
 

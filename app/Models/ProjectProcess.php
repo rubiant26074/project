@@ -21,6 +21,8 @@ class ProjectProcess extends Model
         'position_y',
         'sort_order',
         'allowed_role_codes',
+        'target_start',
+        'target_finish',
     ];
 
     protected function casts(): array
@@ -29,6 +31,8 @@ class ProjectProcess extends Model
             'position_x' => 'float',
             'position_y' => 'float',
             'allowed_role_codes' => 'array',
+            'target_start' => 'date',
+            'target_finish' => 'date',
         ];
     }
 

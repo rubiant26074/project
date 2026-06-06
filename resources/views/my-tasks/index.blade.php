@@ -79,6 +79,7 @@
                             <th>Checklist</th>
                             <th>Project</th>
                             <th>Proses</th>
+                            <th>Target</th>
                             <th>Aksi</th>
                         </tr>
                     </thead>
@@ -115,12 +116,38 @@
                                     </div>
                                 </td>
                                 <td>
+                                    @if (auth()->user()->canUpdateProcess($process))
+                                        <form method="POST" action="{{ route('projects.processes.checklists.update', [$project, $process, $task]) }}" class="task-target-form">
+                                            @csrf
+                                            @method('PUT')
+                                            <input type="hidden" name="label" value="{{ $task->label }}">
+                                            <input type="hidden" name="sort_order" value="{{ $task->sort_order }}">
+                                            <input type="hidden" name="document_link" value="{{ $task->document_link }}">
+                                            <input type="hidden" name="is_done" value="{{ $task->is_done ? 1 : 0 }}">
+                                            <label>
+                                                <span>Mulai</span>
+                                                <input type="date" name="target_start" value="{{ $task->target_start?->format('Y-m-d') }}">
+                                            </label>
+                                            <label>
+                                                <span>Selesai</span>
+                                                <input type="date" name="target_finish" value="{{ $task->target_finish?->format('Y-m-d') }}">
+                                            </label>
+                                            <button class="toolbar-button toolbar-button-small" type="submit">Simpan</button>
+                                        </form>
+                                    @else
+                                        <div class="inline-meta inline-meta-compact">
+                                            <span>Mulai {{ $task->target_start?->format('d M Y') ?? '-' }}</span>
+                                            <span>Selesai {{ $task->target_finish?->format('d M Y') ?? '-' }}</span>
+                                        </div>
+                                    @endif
+                                </td>
+                                <td>
                                     <a class="toolbar-button toolbar-button-small" href="{{ route('projects.processes.show', [$project, $process]) }}">Buka Proses</a>
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5">
+                                <td colspan="6">
                                     <div class="empty-state">Belum ada checklist yang masuk ke role Anda.</div>
                                 </td>
                             </tr>

@@ -90,6 +90,11 @@ class User extends Authenticatable
         return $this->canAccess('process_checklist_manage') || $this->canAccess('process_comment_add');
     }
 
+    public function canUpdateProcessTargets(): bool
+    {
+        return $this->isAdmin() || strtolower((string) $this->role) === 'pm';
+    }
+
     public function canUpdateProcess(ProjectProcess $process): bool
     {
         if ($this->isAdmin()) {
