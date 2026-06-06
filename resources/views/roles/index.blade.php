@@ -128,7 +128,6 @@
                             @endforeach
                         </select>
                     </form>
-                    <button class="toolbar-button toolbar-button-primary toolbar-button-small" type="submit" form="permission-matrix-form">Simpan Matrix</button>
                 </div>
             </div>
 
@@ -136,6 +135,10 @@
                 @csrf
                 @method('PUT')
                 <input type="hidden" name="matrix_role" value="{{ $selectedMatrixRole?->code }}">
+
+                <div class="matrix-save-row matrix-save-row-top">
+                    <button class="toolbar-button toolbar-button-primary toolbar-button-small" type="submit">Simpan Matrix</button>
+                </div>
 
                 @if ($selectedMatrixRole)
                     @foreach ($permissionGroups as $groupName => $permissions)
@@ -153,9 +156,10 @@
                                         @foreach ($permissions as $permission)
                                             @php
                                                 $rolePermission = $selectedMatrixRole->permissions->firstWhere('permission_key', $permission['key']);
-                                                $isAllowed = $rolePermission
+                                                $isAdministrator = $selectedMatrixRole->code === 'admin';
+                                                $isAllowed = $isAdministrator || ($rolePermission
                                                     ? $rolePermission->is_allowed
-                                                    : in_array($selectedMatrixRole->code, $permission['roles'], true);
+                                                    : in_array($selectedMatrixRole->code, $permission['roles'], true));
                                             @endphp
                                             <tr>
                                                 <td data-label="Hak Akses">
@@ -165,10 +169,14 @@
                                                     <select
                                                         class="permission-select permission-select-wide {{ $isAllowed ? 'is-allowed' : 'is-denied' }}"
                                                         name="permissions[{{ $permission['key'] }}]"
+                                                        @disabled($isAdministrator)
                                                     >
                                                         <option value="1" @selected($isAllowed)>Diizinkan</option>
                                                         <option value="0" @selected(! $isAllowed)>Tidak diizinkan</option>
                                                     </select>
+                                                    @if ($isAdministrator)
+                                                        <input type="hidden" name="permissions[{{ $permission['key'] }}]" value="1">
+                                                    @endif
                                                 </td>
                                             </tr>
                                         @endforeach
@@ -180,6 +188,10 @@
                 @else
                     <div class="empty-state">Belum ada role aktif untuk diatur pada matrix hak akses.</div>
                 @endif
+
+                <div class="matrix-save-row">
+                    <button class="toolbar-button toolbar-button-primary toolbar-button-small" type="submit">Simpan Matrix</button>
+                </div>
             </form>
         </section>
     </main>

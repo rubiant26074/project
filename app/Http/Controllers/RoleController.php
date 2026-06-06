@@ -29,7 +29,7 @@ class RoleController extends Controller
         $selectedRole = $matrixRoles->firstWhere('code', $selectedRoleCode) ?? $matrixRoles->first();
 
         $permissions = collect(User::permissionMatrix())
-            ->groupBy('group')
+            ->groupBy('group', preserveKeys: true)
             ->map(function (Collection $groupPermissions) {
                 return $groupPermissions->map(function (array $permission, string $permissionKey) {
                     return [
@@ -112,10 +112,9 @@ class RoleController extends Controller
         ]);
 
         DB::transaction(function () use ($validated, $permissionKeys): void {
-            foreach ($validated['permissions'] as $permissionKey => $isAllowed) {
-                if (! in_array($permissionKey, $permissionKeys, true)) {
-                    continue;
-                }
+            foreach ($permissionKeys as $permissionKey) {
+                $isAllowed = $validated['permissions'][$permissionKey] ?? '0';
+                $isAdminRole = $validated['matrix_role'] === 'admin';
 
                 RolePermission::query()->updateOrCreate(
                     [
@@ -123,7 +122,7 @@ class RoleController extends Controller
                         'permission_key' => $permissionKey,
                     ],
                     [
-                        'is_allowed' => filter_var($isAllowed, FILTER_VALIDATE_BOOLEAN),
+                        'is_allowed' => $isAdminRole || filter_var($isAllowed, FILTER_VALIDATE_BOOLEAN),
                     ],
                 );
             }

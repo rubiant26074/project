@@ -25,6 +25,10 @@ class RolePermission extends Model
 
     public static function isAllowed(string $roleCode, string $permissionKey): bool
     {
+        if ($roleCode === 'admin') {
+            return true;
+        }
+
         if (! Schema::hasTable('role_permissions')) {
             $defaultRoles = config("access_matrix.permissions.{$permissionKey}.roles", []);
 

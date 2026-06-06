@@ -1643,6 +1643,17 @@ body[data-theme='control-room'] .admin-table textarea {
     padding: 0 42px 0 16px;
 }
 
+.matrix-save-row {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 14px;
+}
+
+.matrix-save-row-top {
+    margin-top: 0;
+    margin-bottom: 14px;
+}
+
 .permission-badge {
     display: inline-flex;
     align-items: center;
