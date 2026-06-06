@@ -1,25 +1,54 @@
+const body = document.body;
+const storageKey = 'project-control-theme';
+const supportedThemes = ['industrial-clean', 'dark-steel', 'control-room', 'green-schneider'];
 const themeSwitcher = document.querySelector('[data-theme-switcher]');
+const initialTheme = supportedThemes.includes(localStorage.getItem(storageKey))
+    ? localStorage.getItem(storageKey)
+    : body.dataset.theme;
+
+setTheme(initialTheme);
 
 if (themeSwitcher) {
-    const body = document.body;
-    const storageKey = 'project-control-theme';
-    const supportedThemes = ['industrial-clean', 'dark-steel', 'control-room', 'green-schneider'];
-    const initialTheme = supportedThemes.includes(localStorage.getItem(storageKey))
-        ? localStorage.getItem(storageKey)
-        : body.dataset.theme;
-
-    setTheme(initialTheme);
-
     themeSwitcher.addEventListener('change', () => {
         setTheme(themeSwitcher.value);
         localStorage.setItem(storageKey, themeSwitcher.value);
     });
+}
 
-    function setTheme(theme) {
-        body.dataset.theme = theme;
+function setTheme(theme) {
+    body.dataset.theme = theme;
+
+    if (themeSwitcher) {
         themeSwitcher.value = theme;
     }
 }
+
+document.querySelectorAll('[data-tv-auto-scroll]').forEach((container) => {
+    let pauseTicks = 0;
+
+    window.setInterval(() => {
+        const maxScroll = container.scrollHeight - container.clientHeight;
+
+        if (maxScroll <= 4) {
+            container.scrollTop = 0;
+            return;
+        }
+
+        if (pauseTicks > 0) {
+            pauseTicks -= 1;
+            return;
+        }
+
+        container.scrollTop += 1;
+
+        if (container.scrollTop >= maxScroll - 1) {
+            pauseTicks = 24;
+            window.setTimeout(() => {
+                container.scrollTop = 0;
+            }, 1200);
+        }
+    }, 80);
+});
 
 document.querySelectorAll('.permission-select').forEach((select) => {
     select.addEventListener('change', () => {

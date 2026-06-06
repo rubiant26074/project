@@ -9,10 +9,140 @@ use App\Support\ProjectProcessActivityService;
 use App\Support\ProjectFlowBuilder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class ProjectDashboardController extends Controller
 {
+    public function tv1(): View
+    {
+        $projects = Project::query()
+            ->with(['masterFlow', 'processes.checklists'])
+            ->orderBy('start_project')
+            ->orderBy('target_finish')
+            ->get();
+
+        $today = now()->startOfDay();
+        $stageNames = [
+            'TERIMA PO',
+            'ENGINEERING',
+            'BOM RELEASE',
+            'PURCHASING',
+            'MATERIAL APPROVAL',
+            'FABRICATION',
+            'ASSEMBLY',
+            'WIRING',
+            'TESTING / FAT',
+            'PACKING',
+            'DELIVERY (DO)',
+        ];
+        $decoratedProjects = $projects->map(function (Project $project) use ($today) {
+            $targetFinish = $project->target_finish;
+            $isDelay = $targetFinish && $targetFinish->lt($today) && $project->status !== 'close';
+            $isAtRisk = ! $isDelay && $project->status !== 'close' && ($project->progress < 60 || ($targetFinish && $targetFinish->diffInDays($today, false) >= -14));
+            $deliveryStatus = $isDelay ? 'delay' : ($isAtRisk ? 'at-risk' : 'on-track');
+
+            $project->delivery_status = $deliveryStatus;
+            $project->delivery_label = match ($deliveryStatus) {
+                'delay' => 'DELAY',
+                'at-risk' => 'AT RISK',
+                default => 'ON TRACK',
+            };
+
+            return $project;
+        });
+        $stageProgress = collect($stageNames)->map(function (string $stageName, int $index) use ($projects) {
+            $values = $projects
+                ->map(fn (Project $project) => $project->processes->sortBy('sort_order')->values()->get($index)?->progress)
+                ->filter(fn ($progress) => $progress !== null);
+
+            return [
+                'name' => $stageName,
+                'short' => Str::substr(str_replace(['MATERIAL ', ' / FAT', 'DELIVERY (DO)'], ['MAT ', '', 'DO'], $stageName), 0, 8),
+                'progress' => $values->count() > 0 ? (int) round($values->avg()) : 0,
+            ];
+        });
+        $departmentCards = [
+            [
+                'title' => 'ENGINEERING',
+                'items' => [
+                    ['label' => 'Drawing Approval', 'progress' => $this->averageProcessProgress($projects, ['eng', 'drawing', 'design'])],
+                    ['label' => 'CTP / Dokumen', 'progress' => $this->averageProcessProgress($projects, ['ctp', 'doc', 'client'])],
+                    ['label' => 'BOM Release', 'progress' => $stageProgress->get(2)['progress']],
+                ],
+            ],
+            [
+                'title' => 'PROCUREMENT',
+                'items' => [
+                    ['label' => 'Material Progress', 'progress' => $this->averageProcessProgress($projects, ['purchasing', 'procurement', 'material'])],
+                    ['label' => 'SCC / PO Follow Up', 'progress' => $this->averageProcessProgress($projects, ['scc', 'po'])],
+                    ['label' => 'Outstanding PO', 'progress' => max(0, 100 - $stageProgress->get(3)['progress'])],
+                ],
+            ],
+            [
+                'title' => 'PRODUCTION',
+                'items' => [
+                    ['label' => 'Fabrication', 'progress' => $this->averageProcessProgress($projects, ['fabrication', 'fabrikasi'])],
+                    ['label' => 'Assembly', 'progress' => $this->averageProcessProgress($projects, ['assembly', 'assembling', 'assy'])],
+                    ['label' => 'Wiring', 'progress' => $this->averageProcessProgress($projects, ['wiring', 'qc'])],
+                ],
+            ],
+            [
+                'title' => 'TESTING & DELIVERY',
+                'items' => [
+                    ['label' => 'FAT / Testing', 'progress' => $this->averageProcessProgress($projects, ['fat', 'test', 'testing'])],
+                    ['label' => 'Packing', 'progress' => $this->averageProcessProgress($projects, ['packing', 'shipment'])],
+                    ['label' => 'Delivery', 'progress' => $stageProgress->last()['progress']],
+                ],
+            ],
+            [
+                'title' => 'PM KPI',
+                'items' => [
+                    ['label' => 'Planned Progress', 'progress' => $projects->count() > 0 ? (int) round($projects->avg('progress')) : 0],
+                    ['label' => 'Actual Progress', 'progress' => $projects->count() > 0 ? (int) round($projects->avg('progress')) : 0],
+                    ['label' => 'On Time Delivery', 'progress' => $projects->count() > 0 ? (int) round(($decoratedProjects->where('delivery_status', 'on-track')->count() / $projects->count()) * 100) : 0],
+                ],
+            ],
+        ];
+
+        return view('project-dashboard.tv1', [
+            'projects' => $decoratedProjects,
+            'overviewProjects' => $decoratedProjects,
+            'stageProgress' => $stageProgress,
+            'departmentCards' => $departmentCards,
+            'riskProjects' => $decoratedProjects->whereIn('delivery_status', ['delay', 'at-risk'])->take(5)->values(),
+            'upcomingProjects' => $decoratedProjects
+                ->filter(fn (Project $project) => $project->target_finish && $project->target_finish->between($today, $today->copy()->addDays(30)))
+                ->take(5)
+                ->values(),
+            'totalProjects' => $projects->count(),
+            'onTrackProjects' => $decoratedProjects->where('delivery_status', 'on-track')->count(),
+            'atRiskProjects' => $decoratedProjects->where('delivery_status', 'at-risk')->count(),
+            'delayProjects' => $decoratedProjects->where('delivery_status', 'delay')->count(),
+            'avgProgress' => $projects->count() > 0 ? round($projects->avg('progress'), 1) : 0,
+        ]);
+    }
+
+    private function averageProcessProgress($projects, array $keywords): int
+    {
+        $values = $projects
+            ->flatMap(fn (Project $project) => $project->processes)
+            ->filter(function (ProjectProcess $process) use ($keywords): bool {
+                $name = strtolower($process->name . ' ' . $process->code);
+
+                foreach ($keywords as $keyword) {
+                    if (str_contains($name, strtolower($keyword))) {
+                        return true;
+                    }
+                }
+
+                return false;
+            })
+            ->pluck('progress');
+
+        return $values->count() > 0 ? (int) round($values->avg()) : 0;
+    }
+
     public function index(): View
     {
         $projects = Project::query()

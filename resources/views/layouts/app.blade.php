@@ -24,6 +24,20 @@
 
                 @yield('content')
             </div>
+        @elseif (request()->routeIs('dashboard.tv1'))
+            <div class="tv-shell">
+                @if (session('status'))
+                    <div class="flash-message">{{ session('status') }}</div>
+                @endif
+
+                @if ($errors->any())
+                    <div class="flash-message flash-message-error">
+                        {{ $errors->first() }}
+                    </div>
+                @endif
+
+                @yield('content')
+            </div>
         @else
             <div class="app-shell">
                 <aside class="sidebar-shell">
@@ -42,6 +56,16 @@
                                     </svg>
                                 </span>
                                 <span class="sidebar-nav-label">Dashboard</span>
+                            </a>
+                            <a class="@if (request()->routeIs('dashboard.tv1')) is-active @endif" href="{{ route('dashboard.tv1') }}">
+                                <span class="sidebar-nav-icon" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24">
+                                        <rect x="4" y="5" width="16" height="14" rx="3"></rect>
+                                        <path d="M8 10h8"></path>
+                                        <path d="M8 14h5"></path>
+                                    </svg>
+                                </span>
+                                <span class="sidebar-nav-label">Dashboard TV 1</span>
                             </a>
                             @if (auth()->user()->canAccess('process_view'))
                                 <a class="@if (request()->routeIs('my-tasks.*')) is-active @endif" href="{{ route('my-tasks.index') }}">
