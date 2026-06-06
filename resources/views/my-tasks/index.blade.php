@@ -4,7 +4,7 @@
     <main class="page">
         <section class="hero-banner">
             <div>
-                <p class="eyebrow">Tugas Saya</p>
+                <p class="eyebrow">Daftar Checklist</p>
                 <h1>Daftar Checklist Proses</h1>
                 <p class="hero-copy">Semua checklist yang masuk ke role {{ $roleLabel }} ditampilkan bersama project dan proses terkait.</p>
             </div>
@@ -37,6 +37,25 @@
                 </div>
                 <span class="inline-meta">{{ $tasks->count() }} checklist ditemukan</span>
             </div>
+
+            <form method="GET" action="{{ route('my-tasks.index') }}" class="filter-panel">
+                <div class="filter-field">
+                    <label for="filter-wo">Nomor WO</label>
+                    <input id="filter-wo" name="wo" type="text" value="{{ $filters['wo'] }}" placeholder="Cari WO">
+                </div>
+                <div class="filter-field">
+                    <label for="filter-project">Project</label>
+                    <input id="filter-project" name="project" type="text" value="{{ $filters['project'] }}" placeholder="Cari nama project">
+                </div>
+                <div class="filter-field">
+                    <label for="filter-client">Client</label>
+                    <input id="filter-client" name="client" type="text" value="{{ $filters['client'] }}" placeholder="Cari nama client">
+                </div>
+                <div class="filter-actions">
+                    <button class="toolbar-button toolbar-button-primary toolbar-button-small" type="submit">Filter</button>
+                    <a class="toolbar-button toolbar-button-small" href="{{ route('my-tasks.index') }}">Reset</a>
+                </div>
+            </form>
 
             <div class="table-shell">
                 <table class="admin-table my-task-table">

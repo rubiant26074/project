@@ -55,7 +55,7 @@
                                             <path d="m3.8 18 1 1 2-2"></path>
                                         </svg>
                                     </span>
-                                    <span class="sidebar-nav-label">Tugas Saya</span>
+                                    <span class="sidebar-nav-label">Daftar Checklist</span>
                                 </a>
                             @endif
                             @if (auth()->user()->canAccess('project_create'))

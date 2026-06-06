@@ -1523,6 +1523,52 @@ body[data-theme='control-room'] .admin-table textarea {
     align-items: center;
 }
 
+.filter-panel {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(180px, 1fr)) auto;
+    gap: 12px;
+    align-items: end;
+    margin-bottom: 18px;
+    padding: 14px;
+    border: 1px solid rgba(43, 57, 72, 0.1);
+    border-radius: 18px;
+    background: rgba(245, 247, 249, 0.72);
+}
+
+.filter-field {
+    display: grid;
+    gap: 6px;
+}
+
+.filter-field label {
+    color: var(--muted);
+    font-size: 0.72rem;
+    font-weight: 900;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.filter-field input {
+    min-height: 42px;
+    border: 1px solid rgba(43, 57, 72, 0.16);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.95);
+    color: var(--ink);
+    font: inherit;
+    padding: 0 12px;
+}
+
+.filter-field input:focus {
+    outline: 3px solid rgba(0, 149, 48, 0.12);
+    border-color: rgba(0, 149, 48, 0.45);
+}
+
+.filter-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
 .table-shell {
     overflow-x: auto;
 }
@@ -1949,7 +1995,8 @@ body[data-theme='control-room'] .admin-table textarea {
     .form-grid,
     .form-grid-3,
     .form-inline,
-    .list-card-form {
+    .list-card-form,
+    .filter-panel {
         grid-template-columns: 1fr;
     }
 
