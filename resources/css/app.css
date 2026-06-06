@@ -1548,7 +1548,8 @@ body[data-theme='control-room'] .admin-table textarea {
     text-transform: uppercase;
 }
 
-.filter-field input {
+.filter-field input,
+.filter-field select {
     min-height: 42px;
     border: 1px solid rgba(43, 57, 72, 0.16);
     border-radius: 12px;
@@ -1558,7 +1559,8 @@ body[data-theme='control-room'] .admin-table textarea {
     padding: 0 12px;
 }
 
-.filter-field input:focus {
+.filter-field input:focus,
+.filter-field select:focus {
     outline: 3px solid rgba(0, 149, 48, 0.12);
     border-color: rgba(0, 149, 48, 0.45);
 }

@@ -41,18 +41,32 @@
             <form method="GET" action="{{ route('my-tasks.index') }}" class="filter-panel">
                 <div class="filter-field">
                     <label for="filter-wo">Nomor WO</label>
-                    <input id="filter-wo" name="wo" type="text" value="{{ $filters['wo'] }}" placeholder="Cari WO">
+                    <select id="filter-wo" name="wo" onchange="this.form.submit()">
+                        <option value="">Semua WO</option>
+                        @foreach ($filterOptions['wo'] as $wo)
+                            <option value="{{ $wo }}" @selected($filters['wo'] === $wo)>{{ $wo }}</option>
+                        @endforeach
+                    </select>
                 </div>
                 <div class="filter-field">
                     <label for="filter-project">Project</label>
-                    <input id="filter-project" name="project" type="text" value="{{ $filters['project'] }}" placeholder="Cari nama project">
+                    <select id="filter-project" name="project" onchange="this.form.submit()">
+                        <option value="">Semua Project</option>
+                        @foreach ($filterOptions['project'] as $projectName)
+                            <option value="{{ $projectName }}" @selected($filters['project'] === $projectName)>{{ $projectName }}</option>
+                        @endforeach
+                    </select>
                 </div>
                 <div class="filter-field">
                     <label for="filter-client">Client</label>
-                    <input id="filter-client" name="client" type="text" value="{{ $filters['client'] }}" placeholder="Cari nama client">
+                    <select id="filter-client" name="client" onchange="this.form.submit()">
+                        <option value="">Semua Client</option>
+                        @foreach ($filterOptions['client'] as $clientName)
+                            <option value="{{ $clientName }}" @selected($filters['client'] === $clientName)>{{ $clientName }}</option>
+                        @endforeach
+                    </select>
                 </div>
                 <div class="filter-actions">
-                    <button class="toolbar-button toolbar-button-primary toolbar-button-small" type="submit">Filter</button>
                     <a class="toolbar-button toolbar-button-small" href="{{ route('my-tasks.index') }}">Reset</a>
                 </div>
             </form>

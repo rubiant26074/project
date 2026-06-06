@@ -18,7 +18,7 @@ class MyTaskController extends Controller
             'client' => trim(request()->string('client')->toString()),
         ];
 
-        $tasks = ProjectProcessChecklist::query()
+        $roleTasks = ProjectProcessChecklist::query()
             ->with(['process.project'])
             ->get()
             ->filter(function (ProjectProcessChecklist $checklist) use ($roleCode, $roleName, $user): bool {
@@ -41,7 +41,15 @@ class MyTaskController extends Controller
 
                 return $this->matchesProcessIdentity($process->code, $roleCode, $roleName)
                     || $this->matchesProcessIdentity($process->name, $roleCode, $roleName);
-            })
+            });
+
+        $filterOptions = [
+            'wo' => $this->filterOptions($roleTasks, 'wo_number'),
+            'project' => $this->filterOptions($roleTasks, 'project_name'),
+            'client' => $this->filterOptions($roleTasks, 'client_name'),
+        ];
+
+        $tasks = $roleTasks
             ->filter(function (ProjectProcessChecklist $checklist) use ($filters): bool {
                 $project = $checklist->process->project;
 
@@ -66,6 +74,7 @@ class MyTaskController extends Controller
             'projectCount' => $tasks->pluck('process.project_id')->unique()->count(),
             'processCount' => $tasks->pluck('project_process_id')->unique()->count(),
             'filters' => $filters,
+            'filterOptions' => $filterOptions,
         ]);
     }
 
@@ -92,6 +101,16 @@ class MyTaskController extends Controller
             return true;
         }
 
-        return str_contains(strtolower((string) $value), strtolower($filter));
+        return strtolower((string) $value) === strtolower($filter);
+    }
+
+    private function filterOptions($tasks, string $projectField)
+    {
+        return $tasks
+            ->map(fn (ProjectProcessChecklist $task): ?string => $task->process->project->{$projectField})
+            ->filter()
+            ->unique()
+            ->sort()
+            ->values();
     }
 }
