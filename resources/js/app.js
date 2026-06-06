@@ -73,6 +73,7 @@ if (scrollPreservePage) {
     });
 
     window.addEventListener('beforeunload', storeScrollState);
+    window.projectControlStoreScrollState = storeScrollState;
 
     function storeScrollState() {
         const payload = {
@@ -184,6 +185,7 @@ checklistLinkForms.forEach((form) => {
             }
         }
 
+        window.projectControlStoreScrollState?.();
         form.submit();
     });
 });

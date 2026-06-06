@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-    <main class="page">
+    <main class="page" data-preserve-scroll-page>
         <div class="page-actions">
             <a class="back-link" href="{{ route('projects.show', $project) }}">Kembali ke Dashboard Project</a>
         </div>
