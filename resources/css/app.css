@@ -1728,18 +1728,39 @@ body[data-theme='control-room'] .checklist-item {
 .tv-project-pill-close { background: #0f9f46; }
 
 .tv-project-flow {
-    display: grid;
-    grid-auto-flow: column;
-    grid-auto-columns: minmax(104px, 1fr);
-    gap: 12px;
+    display: flex;
+    gap: 0;
     min-height: 112px;
     padding: 10px 14px 8px;
     border: 1px solid #d7deea;
     border-top: 0;
     background: #ffffff;
-    overflow-x: auto;
+    overflow-x: hidden;
     overflow-y: hidden;
-    scrollbar-width: thin;
+}
+
+.tv-project-flow:hover .tv-project-flow-track {
+    animation-play-state: paused;
+}
+
+.tv-project-flow-track {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 104px;
+    gap: 12px;
+    min-width: max-content;
+    padding-right: 12px;
+    animation: tv-project-flow-marquee 55s linear infinite;
+}
+
+@keyframes tv-project-flow-marquee {
+    from {
+        transform: translateX(0);
+    }
+
+    to {
+        transform: translateX(-100%);
+    }
 }
 
 .tv-project-step {
@@ -1968,6 +1989,39 @@ body[data-theme='control-room'] .checklist-item {
     color: #16417c;
     font-size: 0.64rem;
     font-weight: 950;
+}
+
+.tv-project-stage-panel {
+    display: grid;
+    grid-template-rows: auto auto minmax(0, 1fr);
+}
+
+.tv-project-stage-head,
+.tv-project-stage-track {
+    table-layout: fixed;
+}
+
+.tv-project-stage-scroll {
+    max-height: 326px;
+    overflow: hidden;
+}
+
+.tv-project-stage-scroll:hover .tv-project-stage-track {
+    animation-play-state: paused;
+}
+
+.tv-project-stage-track {
+    animation: tv-project-stage-marquee 48s linear infinite;
+}
+
+@keyframes tv-project-stage-marquee {
+    from {
+        transform: translateY(0);
+    }
+
+    to {
+        transform: translateY(-100%);
+    }
 }
 
 .tv-project-mini-progress {
