@@ -1729,13 +1729,17 @@ body[data-theme='control-room'] .checklist-item {
 
 .tv-project-flow {
     display: grid;
-    grid-template-columns: repeat(11, minmax(0, 1fr));
-    gap: 0;
-    min-height: 154px;
-    padding: 14px 18px 10px;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(104px, 1fr);
+    gap: 12px;
+    min-height: 112px;
+    padding: 10px 14px 8px;
     border: 1px solid #d7deea;
     border-top: 0;
     background: #ffffff;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: thin;
 }
 
 .tv-project-step {
@@ -1743,35 +1747,36 @@ body[data-theme='control-room'] .checklist-item {
     display: grid;
     justify-items: center;
     align-content: start;
-    gap: 5px;
-    padding: 0 7px 8px;
+    gap: 3px;
+    min-width: 0;
+    padding: 0 4px 8px;
     text-align: center;
 }
 
 .tv-project-step:not(:last-child)::after {
     content: "›";
     position: absolute;
-    top: 25px;
-    right: -5px;
+    top: 21px;
+    right: -10px;
     color: #061b49;
-    font-size: 2.4rem;
+    font-size: 1.9rem;
     font-weight: 950;
 }
 
 .tv-project-step-icon {
     display: grid;
     place-items: center;
-    width: 62px;
-    height: 62px;
-    border: 1px solid #b8c5d8;
+    width: 44px;
+    height: 44px;
+    border: 1.5px solid #238b3b;
     border-radius: 50%;
     background: #ffffff;
-    color: #061b49;
+    color: #238b3b;
 }
 
 .tv-project-step-icon svg {
-    width: 34px;
-    height: 34px;
+    width: 23px;
+    height: 23px;
     fill: none;
     stroke: currentColor;
     stroke-width: 3;
@@ -1780,9 +1785,15 @@ body[data-theme='control-room'] .checklist-item {
 }
 
 .tv-project-step.is-current {
-    border: 2px solid #f6b94f;
-    border-radius: 10px;
-    background: #fff8ed;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+}
+
+.tv-project-step.is-current .tv-project-step-icon {
+    border-color: #f59e0b;
+    color: #f59e0b;
+    box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.12);
 }
 
 .tv-project-step-done em { color: #0f9f46; }
@@ -1791,17 +1802,45 @@ body[data-theme='control-room'] .checklist-item {
 
 .tv-project-step strong {
     color: #061b49;
-    font-size: 0.62rem;
+    max-width: 100%;
+    min-height: 22px;
+    overflow: hidden;
+    font-size: 0.56rem;
     font-weight: 950;
+    line-height: 1.15;
     text-transform: uppercase;
+    text-overflow: ellipsis;
 }
 
 .tv-project-step small,
 .tv-project-step em {
     color: #34425b;
-    font-size: 0.62rem;
+    font-size: 0.55rem;
     font-style: normal;
     font-weight: 800;
+}
+
+.tv-project-step small {
+    display: none;
+}
+
+.tv-project-step::before {
+    content: "";
+    align-self: end;
+    width: 88%;
+    height: 3px;
+    order: 10;
+    margin-top: 4px;
+    border-radius: 999px;
+    background: #e5eaf0;
+}
+
+.tv-project-step-done::before {
+    background: #238b3b;
+}
+
+.tv-project-step-progress::before {
+    background: linear-gradient(90deg, #238b3b 0%, #f59e0b 100%);
 }
 
 .tv-project-progress-strip {
