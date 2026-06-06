@@ -84,7 +84,7 @@
                                         <button class="toolbar-button toolbar-button-danger toolbar-button-small" type="submit">Hapus</button>
                                     </form>
                                 @endif
-                                @if (auth()->user()->canAccess('project_view'))
+                                @if (auth()->user()->canAccess('project_view') && Route::has('projects.tv'))
                                     <a class="toolbar-button toolbar-button-small toolbar-button-tv" href="{{ route('projects.tv', $project) }}">TV Dashboard</a>
                                 @endif
                             </div>
