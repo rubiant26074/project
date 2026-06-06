@@ -55,7 +55,7 @@
         </section>
 
         <div class="toolbar-group">
-            @if (auth()->user()->canManageProjects())
+            @if (auth()->user()->canAccess('project_update'))
                 <a class="toolbar-button" href="{{ route('projects.edit', $project) }}">Edit Project</a>
             @endif
             @if ($project->masterFlow && auth()->user()->canManageMasterFlows())

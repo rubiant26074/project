@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-    <main class="page">
+    <main class="page" data-preserve-scroll-page>
         <section class="hero-banner">
             <div>
                 <p class="eyebrow">Admin Panel</p>
@@ -117,43 +117,70 @@
                     <p class="eyebrow">Matrik Hak Akses</p>
                     <h2>Detail Akses Per Role</h2>
                 </div>
+                <div class="matrix-toolbar">
+                    <form method="GET" action="{{ route('roles.index') }}" class="matrix-role-filter">
+                        <label for="matrix-role">Pilih Role</label>
+                        <select id="matrix-role" name="matrix_role" onchange="this.form.submit()">
+                            @foreach ($matrixRoles as $role)
+                                <option value="{{ $role->code }}" @selected($selectedMatrixRole?->code === $role->code)>
+                                    {{ $role->name }} ({{ strtoupper($role->code) }})
+                                </option>
+                            @endforeach
+                        </select>
+                    </form>
+                    <button class="toolbar-button toolbar-button-primary toolbar-button-small" type="submit" form="permission-matrix-form">Simpan Matrix</button>
+                </div>
             </div>
 
-            @foreach ($permissionGroups as $groupName => $permissions)
-                <div class="subsection">
-                    <h3>{{ $groupName }}</h3>
-                    <div class="table-shell">
-                        <table class="admin-table permission-matrix-table">
-                            <thead>
-                                <tr>
-                                    <th>Hak Akses</th>
-                                    @foreach ($roleMatrix as $roleCode => $roleInfo)
-                                        <th>{{ $roleInfo['label'] }}</th>
-                                    @endforeach
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach ($permissions as $permission)
-                                    <tr>
-                                        <td data-label="Hak Akses">
-                                            <strong>{{ $permission['label'] }}</strong>
-                                        </td>
-                                        @foreach ($roleMatrix as $roleCode => $roleInfo)
-                                            <td data-label="{{ $roleInfo['label'] }}">
-                                                @if (in_array($roleCode, $permission['roles'], true))
-                                                    <span class="permission-badge permission-badge-allow">Diizinkan</span>
-                                                @else
-                                                    <span class="permission-badge permission-badge-deny">Tidak</span>
-                                                @endif
-                                            </td>
+            <form method="POST" action="{{ route('roles.permissions.update') }}" id="permission-matrix-form">
+                @csrf
+                @method('PUT')
+                <input type="hidden" name="matrix_role" value="{{ $selectedMatrixRole?->code }}">
+
+                @if ($selectedMatrixRole)
+                    @foreach ($permissionGroups as $groupName => $permissions)
+                        <div class="subsection">
+                            <h3>{{ $groupName }}</h3>
+                            <div class="table-shell">
+                                <table class="admin-table permission-matrix-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Hak Akses</th>
+                                            <th>{{ $selectedMatrixRole->name }}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach ($permissions as $permission)
+                                            @php
+                                                $rolePermission = $selectedMatrixRole->permissions->firstWhere('permission_key', $permission['key']);
+                                                $isAllowed = $rolePermission
+                                                    ? $rolePermission->is_allowed
+                                                    : in_array($selectedMatrixRole->code, $permission['roles'], true);
+                                            @endphp
+                                            <tr>
+                                                <td data-label="Hak Akses">
+                                                    <strong>{{ $permission['label'] }}</strong>
+                                                </td>
+                                                <td data-label="{{ $selectedMatrixRole->name }}">
+                                                    <select
+                                                        class="permission-select permission-select-wide {{ $isAllowed ? 'is-allowed' : 'is-denied' }}"
+                                                        name="permissions[{{ $permission['key'] }}]"
+                                                    >
+                                                        <option value="1" @selected($isAllowed)>Diizinkan</option>
+                                                        <option value="0" @selected(! $isAllowed)>Tidak diizinkan</option>
+                                                    </select>
+                                                </td>
+                                            </tr>
                                         @endforeach
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    @endforeach
+                @else
+                    <div class="empty-state">Belum ada role aktif untuk diatur pada matrix hak akses.</div>
+                @endif
+            </form>
         </section>
     </main>
 @endsection

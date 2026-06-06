@@ -9,7 +9,7 @@
                 <p class="hero-copy">Pantau seluruh project dalam bentuk kartu kanban. Klik salah satu kartu untuk membuka flow proses per project.</p>
             </div>
             <div class="hero-actions">
-                @if (auth()->user()->canManageProjects())
+                @if (auth()->user()->canAccess('project_create'))
                     <a class="toolbar-button toolbar-button-primary" href="{{ route('projects.create') }}">Tambah Project</a>
                 @endif
                 @if (auth()->user()->canManageMasterFlows())
@@ -72,14 +72,18 @@
                                 <span>{{ ucfirst($project->status) }}</span>
                             </div>
                         </a>
-                        @if (auth()->user()->canManageProjects())
+                        @if (auth()->user()->canAccess('project_update') || auth()->user()->canAccess('project_delete'))
                             <div class="project-card-actions">
-                                <a class="toolbar-button toolbar-button-small" href="{{ route('projects.edit', $project) }}">Edit</a>
-                                <form method="POST" action="{{ route('projects.destroy', $project) }}" onsubmit="return confirm('Hapus project ini?')">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button class="toolbar-button toolbar-button-danger toolbar-button-small" type="submit">Hapus</button>
-                                </form>
+                                @if (auth()->user()->canAccess('project_update'))
+                                    <a class="toolbar-button toolbar-button-small" href="{{ route('projects.edit', $project) }}">Edit</a>
+                                @endif
+                                @if (auth()->user()->canAccess('project_delete'))
+                                    <form method="POST" action="{{ route('projects.destroy', $project) }}" onsubmit="return confirm('Hapus project ini?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button class="toolbar-button toolbar-button-danger toolbar-button-small" type="submit">Hapus</button>
+                                    </form>
+                                @endif
                             </div>
                         @endif
                     </div>

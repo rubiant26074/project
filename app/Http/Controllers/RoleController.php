@@ -3,16 +3,31 @@
 namespace App\Http\Controllers;
 
 use App\Models\Role;
+use App\Models\RolePermission;
 use App\Models\User;
 use Illuminate\Support\Collection;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class RoleController extends Controller
 {
     public function index(): View
     {
+        $roles = Role::query()
+            ->withCount('users')
+            ->with('permissions')
+            ->orderByDesc('is_system')
+            ->orderBy('name')
+            ->get();
+
+        $this->ensurePermissionRows($roles);
+        $roles->load('permissions');
+        $matrixRoles = $roles->where('is_active', true)->values();
+        $selectedRoleCode = request()->string('matrix_role')->toString() ?: $matrixRoles->first()?->code;
+        $selectedRole = $matrixRoles->firstWhere('code', $selectedRoleCode) ?? $matrixRoles->first();
+
         $permissions = collect(User::permissionMatrix())
             ->groupBy('group')
             ->map(function (Collection $groupPermissions) {
@@ -25,8 +40,9 @@ class RoleController extends Controller
             });
 
         return view('roles.index', [
-            'roles' => Role::query()->withCount('users')->orderByDesc('is_system')->orderBy('name')->get(),
-            'roleMatrix' => User::roleMatrix(),
+            'roles' => $roles,
+            'matrixRoles' => $matrixRoles,
+            'selectedMatrixRole' => $selectedRole,
             'permissionGroups' => $permissions,
         ]);
     }
@@ -40,12 +56,14 @@ class RoleController extends Controller
             'is_active' => ['nullable', 'boolean'],
         ]);
 
-        Role::create([
+        $role = Role::create([
             ...$validated,
             'code' => strtolower($validated['code']),
             'is_active' => (bool) ($validated['is_active'] ?? false),
             'is_system' => false,
         ]);
+
+        $this->ensurePermissionRows(collect([$role]));
 
         return redirect()
             ->route('roles.index')
@@ -83,6 +101,39 @@ class RoleController extends Controller
             ->with('status', 'Role berhasil diperbarui.');
     }
 
+    public function updatePermissions(Request $request): RedirectResponse
+    {
+        $permissionKeys = array_keys(User::permissionMatrix());
+
+        $validated = $request->validate([
+            'permissions' => ['required', 'array'],
+            'permissions.*' => ['required', 'boolean'],
+            'matrix_role' => ['required', 'exists:roles,code'],
+        ]);
+
+        DB::transaction(function () use ($validated, $permissionKeys): void {
+            foreach ($validated['permissions'] as $permissionKey => $isAllowed) {
+                if (! in_array($permissionKey, $permissionKeys, true)) {
+                    continue;
+                }
+
+                RolePermission::query()->updateOrCreate(
+                    [
+                        'role_code' => $validated['matrix_role'],
+                        'permission_key' => $permissionKey,
+                    ],
+                    [
+                        'is_allowed' => filter_var($isAllowed, FILTER_VALIDATE_BOOLEAN),
+                    ],
+                );
+            }
+        });
+
+        return redirect()
+            ->route('roles.index', ['matrix_role' => $validated['matrix_role'] ?? null])
+            ->with('status', 'Matrix hak akses berhasil diperbarui.');
+    }
+
     public function destroy(Role $role): RedirectResponse
     {
         if ($role->is_system) {
@@ -102,5 +153,35 @@ class RoleController extends Controller
         return redirect()
             ->route('roles.index')
             ->with('status', 'Role berhasil dihapus.');
+    }
+
+    private function ensurePermissionRows(Collection $roles): void
+    {
+        $permissions = User::permissionMatrix();
+        $now = now();
+
+        $rows = $roles
+            ->flatMap(function (Role $role) use ($permissions, $now) {
+                $existingKeys = $role->permissions->pluck('permission_key')->all();
+
+                return collect($permissions)
+                    ->reject(fn (array $permission, string $permissionKey): bool => in_array($permissionKey, $existingKeys, true))
+                    ->map(function (array $permission, string $permissionKey) use ($role, $now) {
+                        return [
+                            'role_code' => $role->code,
+                            'permission_key' => $permissionKey,
+                            'is_allowed' => in_array($role->code, $permission['roles'] ?? [], true),
+                            'created_at' => $now,
+                            'updated_at' => $now,
+                        ];
+                    })
+                    ->values();
+            })
+            ->values()
+            ->all();
+
+        if (! empty($rows)) {
+            RolePermission::query()->insert($rows);
+        }
     }
 }

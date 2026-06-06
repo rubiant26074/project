@@ -110,9 +110,7 @@ class User extends Authenticatable
 
     public function canAccess(string $permission): bool
     {
-        $roles = config("access_matrix.permissions.{$permission}.roles", []);
-
-        return in_array($this->role, $roles, true);
+        return RolePermission::isAllowed((string) $this->role, $permission);
     }
 
     public function canDeleteProcessComment(?int $commentUserId): bool

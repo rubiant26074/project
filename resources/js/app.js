@@ -21,6 +21,13 @@ if (themeSwitcher) {
     }
 }
 
+document.querySelectorAll('.permission-select').forEach((select) => {
+    select.addEventListener('change', () => {
+        select.classList.toggle('is-allowed', select.value === '1');
+        select.classList.toggle('is-denied', select.value !== '1');
+    });
+});
+
 const scrollPreservePage = document.querySelector('[data-preserve-scroll-page]');
 
 if (scrollPreservePage) {

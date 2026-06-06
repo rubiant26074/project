@@ -43,20 +43,22 @@
                                 </span>
                                 <span class="sidebar-nav-label">Dashboard</span>
                             </a>
-                            <a class="@if (request()->routeIs('my-tasks.*')) is-active @endif" href="{{ route('my-tasks.index') }}">
-                                <span class="sidebar-nav-icon" aria-hidden="true">
-                                    <svg viewBox="0 0 24 24">
-                                        <path d="M8 6h11"></path>
-                                        <path d="M8 12h11"></path>
-                                        <path d="M8 18h11"></path>
-                                        <path d="m3.8 6 1 1 2-2"></path>
-                                        <path d="m3.8 12 1 1 2-2"></path>
-                                        <path d="m3.8 18 1 1 2-2"></path>
-                                    </svg>
-                                </span>
-                                <span class="sidebar-nav-label">Tugas Saya</span>
-                            </a>
-                            @if (auth()->user()->canManageProjects())
+                            @if (auth()->user()->canAccess('process_view'))
+                                <a class="@if (request()->routeIs('my-tasks.*')) is-active @endif" href="{{ route('my-tasks.index') }}">
+                                    <span class="sidebar-nav-icon" aria-hidden="true">
+                                        <svg viewBox="0 0 24 24">
+                                            <path d="M8 6h11"></path>
+                                            <path d="M8 12h11"></path>
+                                            <path d="M8 18h11"></path>
+                                            <path d="m3.8 6 1 1 2-2"></path>
+                                            <path d="m3.8 12 1 1 2-2"></path>
+                                            <path d="m3.8 18 1 1 2-2"></path>
+                                        </svg>
+                                    </span>
+                                    <span class="sidebar-nav-label">Tugas Saya</span>
+                                </a>
+                            @endif
+                            @if (auth()->user()->canAccess('project_create'))
                                 <a class="@if (request()->routeIs('projects.create')) is-active @endif" href="{{ route('projects.create') }}">
                                     <span class="sidebar-nav-icon" aria-hidden="true">
                                         <svg viewBox="0 0 24 24">
