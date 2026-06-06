@@ -240,6 +240,9 @@ body[data-theme='control-room'] .sidebar-shell {
     transition: all 150ms ease;
     position: relative;
     overflow: hidden;
+    --nav-icon-start: #38bdf8;
+    --nav-icon-end: #2563eb;
+    --nav-icon-glow: rgba(37, 99, 235, 0.22);
 }
 
 .sidebar-nav a:hover,
@@ -247,6 +250,10 @@ body[data-theme='control-room'] .sidebar-shell {
     border-color: rgba(0, 149, 48, 0.24);
     background: linear-gradient(180deg, #f5fbf5 0%, #ebf7ee 100%);
     color: var(--accent-dark);
+}
+
+.sidebar-nav a:hover {
+    transform: translateX(2px);
 }
 
 .sidebar-nav a.is-active {
@@ -271,9 +278,63 @@ body[data-theme='control-room'] .sidebar-shell {
     display: inline-grid;
     place-items: center;
     border-radius: 12px;
-    background: rgba(255, 255, 255, 0.74);
-    border: 1px solid rgba(0, 149, 48, 0.12);
+    background:
+        radial-gradient(circle at 28% 22%, rgba(255, 255, 255, 0.55) 0 12%, transparent 32%),
+        linear-gradient(135deg, var(--nav-icon-start) 0%, var(--nav-icon-end) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.64);
+    box-shadow: 0 10px 20px var(--nav-icon-glow), inset 0 1px 0 rgba(255, 255, 255, 0.36);
+    color: #ffffff;
     flex-shrink: 0;
+    transition: transform 150ms ease, box-shadow 150ms ease, filter 150ms ease;
+}
+
+.sidebar-nav a:nth-child(1) {
+    --nav-icon-start: #38bdf8;
+    --nav-icon-end: #2563eb;
+    --nav-icon-glow: rgba(37, 99, 235, 0.22);
+}
+
+.sidebar-nav a:nth-child(2) {
+    --nav-icon-start: #22c55e;
+    --nav-icon-end: #0f9f46;
+    --nav-icon-glow: rgba(34, 197, 94, 0.24);
+}
+
+.sidebar-nav a:nth-child(3) {
+    --nav-icon-start: #f59e0b;
+    --nav-icon-end: #ef4444;
+    --nav-icon-glow: rgba(239, 68, 68, 0.22);
+}
+
+.sidebar-nav a:nth-child(4) {
+    --nav-icon-start: #a855f7;
+    --nav-icon-end: #6366f1;
+    --nav-icon-glow: rgba(99, 102, 241, 0.24);
+}
+
+.sidebar-nav a:nth-child(5) {
+    --nav-icon-start: #14b8a6;
+    --nav-icon-end: #0284c7;
+    --nav-icon-glow: rgba(2, 132, 199, 0.24);
+}
+
+.sidebar-nav a:nth-child(6) {
+    --nav-icon-start: #fb7185;
+    --nav-icon-end: #be123c;
+    --nav-icon-glow: rgba(190, 18, 60, 0.22);
+}
+
+.sidebar-nav a:nth-child(7) {
+    --nav-icon-start: #facc15;
+    --nav-icon-end: #f97316;
+    --nav-icon-glow: rgba(249, 115, 22, 0.22);
+}
+
+.sidebar-nav a:hover .sidebar-nav-icon,
+.sidebar-nav a.is-active .sidebar-nav-icon {
+    transform: scale(1.08) rotate(-3deg);
+    filter: saturate(1.16);
+    box-shadow: 0 14px 26px var(--nav-icon-glow), inset 0 1px 0 rgba(255, 255, 255, 0.42);
 }
 
 .sidebar-nav-icon svg {
