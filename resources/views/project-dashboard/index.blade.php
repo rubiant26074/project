@@ -72,7 +72,7 @@
                                 <span>{{ ucfirst($project->status) }}</span>
                             </div>
                         </a>
-                        @if (auth()->user()->canAccess('project_update') || auth()->user()->canAccess('project_delete'))
+                        @if (auth()->user()->canAccess('project_view') || auth()->user()->canAccess('project_update') || auth()->user()->canAccess('project_delete'))
                             <div class="project-card-actions">
                                 @if (auth()->user()->canAccess('project_update'))
                                     <a class="toolbar-button toolbar-button-small" href="{{ route('projects.edit', $project) }}">Edit</a>
@@ -83,6 +83,9 @@
                                         @method('DELETE')
                                         <button class="toolbar-button toolbar-button-danger toolbar-button-small" type="submit">Hapus</button>
                                     </form>
+                                @endif
+                                @if (auth()->user()->canAccess('project_view'))
+                                    <a class="toolbar-button toolbar-button-small toolbar-button-tv" href="{{ route('projects.tv', $project) }}">TV Dashboard</a>
                                 @endif
                             </div>
                         @endif

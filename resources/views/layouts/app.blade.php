@@ -24,7 +24,7 @@
 
                 @yield('content')
             </div>
-        @elseif (request()->routeIs('dashboard.tv1'))
+        @elseif (request()->routeIs('dashboard.tv1') || request()->routeIs('projects.tv'))
             <div class="tv-shell">
                 @if (session('status'))
                     <div class="flash-message">{{ session('status') }}</div>

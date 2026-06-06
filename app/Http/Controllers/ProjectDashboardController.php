@@ -178,6 +178,56 @@ class ProjectDashboardController extends Controller
         ]);
     }
 
+    public function tvProject(Project $project, ProjectFlowBuilder $flowBuilder): View
+    {
+        $flowBuilder->syncLayout($project);
+
+        $project->load([
+            'masterFlow',
+            'processes.checklists',
+        ]);
+
+        $today = now()->startOfDay();
+        $processes = $project->processes->sortBy('sort_order')->values();
+        $completedProcesses = $processes->where('status', 'close')->count();
+        $activeProcess = $processes->firstWhere('status', 'proses') ?? $processes->firstWhere('status', 'open') ?? $processes->last();
+        $totalChecklist = $processes->sum('total_checklists');
+        $completedChecklist = $processes->sum('completed_checklists');
+        $openChecklist = $totalChecklist - $completedChecklist;
+        $plannedProgress = $this->calculatePlannedProgress($project, $processes, $today);
+        $scheduleVariance = $project->progress - $plannedProgress;
+        $criticalItems = $processes
+            ->flatMap(fn (ProjectProcess $process) => $process->checklists->map(fn ($checklist) => [
+                'process' => $process,
+                'checklist' => $checklist,
+            ]))
+            ->filter(fn (array $item) => ! $item['checklist']->is_done)
+            ->sortBy(fn (array $item) => $item['checklist']->target_finish?->timestamp ?? PHP_INT_MAX)
+            ->take(6)
+            ->values();
+        $documents = $processes
+            ->flatMap(fn (ProjectProcess $process) => $process->checklists->filter(fn ($checklist) => filled($checklist->document_link))->map(fn ($checklist) => [
+                'process' => $process,
+                'checklist' => $checklist,
+            ]))
+            ->take(6)
+            ->values();
+
+        return view('project-dashboard.tv-project', [
+            'project' => $project,
+            'processes' => $processes,
+            'completedProcesses' => $completedProcesses,
+            'activeProcess' => $activeProcess,
+            'totalChecklist' => $totalChecklist,
+            'completedChecklist' => $completedChecklist,
+            'openChecklist' => $openChecklist,
+            'plannedProgress' => $plannedProgress,
+            'scheduleVariance' => $scheduleVariance,
+            'criticalItems' => $criticalItems,
+            'documents' => $documents,
+        ]);
+    }
+
     public function showProcess(Project $project, ProjectProcess $process): View
     {
         abort_unless((int) $process->project_id === (int) $project->getKey(), 404);
@@ -229,5 +279,25 @@ class ProjectDashboardController extends Controller
         return redirect()
             ->route('projects.processes.show', [$project, $process])
             ->with('status', 'Target tanggal proses berhasil diperbarui.');
+    }
+
+    private function calculatePlannedProgress(Project $project, $processes, $today): int
+    {
+        if (! $project->start_project || ! $project->target_finish || $project->target_finish->lte($project->start_project)) {
+            return $processes->count() > 0 ? (int) round($processes->avg('progress')) : 0;
+        }
+
+        if ($today->lte($project->start_project)) {
+            return 0;
+        }
+
+        if ($today->gte($project->target_finish)) {
+            return 100;
+        }
+
+        $totalDays = max(1, $project->start_project->diffInDays($project->target_finish));
+        $elapsedDays = max(0, $project->start_project->diffInDays($today));
+
+        return min(100, (int) round(($elapsedDays / $totalDays) * 100));
     }
 }

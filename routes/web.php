@@ -31,6 +31,7 @@ Route::middleware('auth')->group(function (): void {
         Route::put('/{project}', [ProjectController::class, 'update'])->middleware('permission:project_update')->name('update');
         Route::delete('/{project}', [ProjectController::class, 'destroy'])->middleware('permission:project_delete')->name('destroy');
 
+        Route::get('/{project}/tv-dashboard', [ProjectDashboardController::class, 'tvProject'])->middleware('permission:project_view')->name('tv');
         Route::get('/{project}', [ProjectDashboardController::class, 'show'])->middleware('permission:project_view')->name('show');
         Route::get('/{project}/processes/{process}', [ProjectDashboardController::class, 'showProcess'])->middleware('permission:process_view')->name('processes.show');
         Route::put('/{project}/processes/{process}/target', [ProjectDashboardController::class, 'updateProcessTarget'])->name('processes.target.update');
