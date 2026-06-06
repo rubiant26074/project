@@ -36,6 +36,7 @@ class ProjectDashboardController extends Controller
             'PACKING',
             'DELIVERY (DO)',
         ];
+        $stageShortNames = ['PO', 'ENG', 'BOM', 'PUR', 'MAT IN', 'FAB', 'ASSY', 'WIRING', 'TEST', 'PACK', 'DO'];
         $decoratedProjects = $projects->map(function (Project $project) use ($today) {
             $targetFinish = $project->target_finish;
             $isDelay = $targetFinish && $targetFinish->lt($today) && $project->status !== 'close';
@@ -51,14 +52,14 @@ class ProjectDashboardController extends Controller
 
             return $project;
         });
-        $stageProgress = collect($stageNames)->map(function (string $stageName, int $index) use ($projects) {
+        $stageProgress = collect($stageNames)->map(function (string $stageName, int $index) use ($projects, $stageShortNames) {
             $values = $projects
                 ->map(fn (Project $project) => $project->processes->sortBy('sort_order')->values()->get($index)?->progress)
                 ->filter(fn ($progress) => $progress !== null);
 
             return [
                 'name' => $stageName,
-                'short' => Str::substr(str_replace(['MATERIAL ', ' / FAT', 'DELIVERY (DO)'], ['MAT ', '', 'DO'], $stageName), 0, 8),
+                'short' => $stageShortNames[$index] ?? Str::substr($stageName, 0, 4),
                 'progress' => $values->count() > 0 ? (int) round($values->avg()) : 0,
             ];
         });
@@ -110,7 +111,7 @@ class ProjectDashboardController extends Controller
             'overviewProjects' => $decoratedProjects,
             'stageProgress' => $stageProgress,
             'departmentCards' => $departmentCards,
-            'riskProjects' => $decoratedProjects->whereIn('delivery_status', ['delay', 'at-risk'])->take(5)->values(),
+            'riskProjects' => $decoratedProjects->whereIn('delivery_status', ['delay', 'at-risk'])->values(),
             'upcomingProjects' => $decoratedProjects
                 ->filter(fn (Project $project) => $project->target_finish && $project->target_finish->between($today, $today->copy()->addDays(30)))
                 ->take(5)

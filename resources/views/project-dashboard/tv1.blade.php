@@ -157,9 +157,9 @@
                             <thead>
                                 <tr>
                                     <th>No.</th>
+                                    <th>Wo Number</th>
                                     <th>Project</th>
                                     <th>Customer</th>
-                                    <th>PO No.</th>
                                     <th>PO Date</th>
                                     <th>Delivery Date</th>
                                     <th>Overall Progress</th>
@@ -170,9 +170,9 @@
                                 @forelse ($overviewProjects as $index => $project)
                                     <tr>
                                         <td>{{ $index + 1 }}</td>
+                                        <td>{{ $project->wo_number }}</td>
                                         <td>{{ $project->project_name }}</td>
                                         <td>{{ $project->client_name }}</td>
-                                        <td>{{ $project->wo_number }}</td>
                                         <td>{{ $project->start_project?->format('d M Y') ?? '-' }}</td>
                                         <td>{{ $project->target_finish?->format('d M Y') ?? '-' }}</td>
                                         <td>
@@ -237,34 +237,36 @@
             <section class="tv-bottom-grid">
                 <article class="tv-panel">
                     <h2>CRITICAL ISSUE / RISK</h2>
-                    <table class="tv-compact-table">
-                        <thead>
-                            <tr>
-                                <th>Project</th>
-                                <th>Issue / Risk</th>
-                                <th>Impact</th>
-                                <th>Action Plan</th>
-                                <th>PIC</th>
-                                <th>Target Date</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse ($riskProjects as $project)
+                    <div class="tv-risk-scroll" data-tv-auto-scroll>
+                        <table class="tv-compact-table">
+                            <thead>
                                 <tr>
-                                    <td>{{ $project->wo_number }}</td>
-                                    <td>{{ $project->project_name }} progress perlu follow up</td>
-                                    <td><span class="tv-impact tv-impact-{{ $project->delivery_status }}">{{ $project->delivery_label }}</span></td>
-                                    <td>Review schedule, koordinasi material, dan percepatan proses.</td>
-                                    <td>PM</td>
-                                    <td>{{ $project->target_finish?->format('d M Y') ?? '-' }}</td>
+                                    <th>Project</th>
+                                    <th>Issue / Risk</th>
+                                    <th>Impact</th>
+                                    <th>Action Plan</th>
+                                    <th>PIC</th>
+                                    <th>Target Date</th>
                                 </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="6">Tidak ada issue kritikal.</td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                @forelse ($riskProjects as $project)
+                                    <tr>
+                                        <td>{{ $project->wo_number }}</td>
+                                        <td>{{ $project->project_name }} progress perlu follow up</td>
+                                        <td><span class="tv-impact tv-impact-{{ $project->delivery_status }}">{{ $project->delivery_label }}</span></td>
+                                        <td>Review schedule, koordinasi material, dan percepatan proses.</td>
+                                        <td>PM</td>
+                                        <td>{{ $project->target_finish?->format('d M Y') ?? '-' }}</td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="6">Tidak ada issue kritikal.</td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
                 </article>
 
                 <article class="tv-panel">

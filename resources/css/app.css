@@ -1341,10 +1341,17 @@ body[data-theme='control-room'] .checklist-item {
     scroll-behavior: auto;
 }
 
-.tv-overview-scroll .tv-compact-table th {
+.tv-overview-scroll .tv-compact-table th,
+.tv-risk-scroll .tv-compact-table th {
     position: sticky;
     top: 0;
     z-index: 2;
+}
+
+.tv-risk-scroll {
+    max-height: 184px;
+    overflow: hidden;
+    scroll-behavior: auto;
 }
 
 .tv-panel h2 {
@@ -1496,7 +1503,7 @@ body[data-theme='control-room'] .checklist-item {
 .tv-stage-chart {
     display: grid;
     grid-template-columns: repeat(11, minmax(0, 1fr));
-    gap: 8px;
+    gap: 10px;
     align-items: end;
     height: 188px;
     padding: 10px;
@@ -1504,22 +1511,24 @@ body[data-theme='control-room'] .checklist-item {
 
 .tv-stage-chart div {
     display: grid;
-    grid-template-rows: 18px 1fr 22px;
+    grid-template-rows: 18px 1fr 18px;
     justify-items: center;
     align-items: end;
     height: 100%;
+    min-width: 0;
 }
 
 .tv-stage-chart span,
 .tv-stage-chart small {
     color: var(--tv-panel-text);
-    font-size: 0.58rem;
+    font-size: 0.6rem;
     font-weight: 900;
     text-align: center;
+    white-space: nowrap;
 }
 
 .tv-stage-chart i {
-    width: 70%;
+    width: 76%;
     min-height: 4px;
     border-radius: 3px 3px 0 0;
 }
