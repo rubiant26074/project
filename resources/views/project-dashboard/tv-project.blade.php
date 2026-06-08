@@ -9,9 +9,9 @@
 
     <main class="tv-project-page">
         <header class="tv-project-header">
-            <a class="tv-project-back" href="{{ route('dashboard') }}" aria-label="Kembali ke dashboard">‹</a>
+            <a class="tv-project-back" href="{{ route('dashboard') }}" aria-label="Kembali ke dashboard">&lsaquo;</a>
             <div>
-                <h1>PM PROJECT TRACKER – DETAIL PROJECT</h1>
+                <h1>{{ config('app.name') }} - DETAIL PROJECT</h1>
                 <p>End to End Project Monitoring</p>
             </div>
             <div class="tv-project-header-actions">
@@ -265,3 +265,4 @@
         </section>
     </main>
 @endsection
+

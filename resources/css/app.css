@@ -1298,6 +1298,7 @@ body[data-theme='control-room'] .checklist-item {
 .tv-stage-strip {
     display: grid;
     grid-template-columns: repeat(11, minmax(0, 1fr));
+    gap: 8px;
     padding: 12px;
     border: 1px solid var(--tv-panel-line);
     border-radius: 4px;
@@ -1314,7 +1315,7 @@ body[data-theme='control-room'] .checklist-item {
 }
 
 .tv-stage-card:not(:last-child)::after {
-    content: "›";
+    content: ">";
     position: absolute;
     top: 18px;
     right: -13px;
@@ -1322,6 +1323,7 @@ body[data-theme='control-room'] .checklist-item {
     font-size: 2.1rem;
     font-weight: 900;
     line-height: 1;
+    content: ">";
 }
 
 .tv-stage-icon {
@@ -1609,6 +1611,7 @@ body[data-theme='control-room'] .checklist-item {
 .tv-project-page {
     min-height: 100vh;
     padding: 6px;
+    font-family: var(--font-sans);
     color: #071a3a;
     background: #f6f8fc;
     font-size: 0.74rem;
