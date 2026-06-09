@@ -136,11 +136,11 @@
                     </div>
                     <div class="form-field">
                         <label>Role Yang Boleh Update Proses Ini</label>
-                        <div class="role-permission-grid">
+                        <div class="role-permission-list">
                             @foreach ($roles as $role)
-                                <label class="role-permission-option">
+                                <label class="role-permission-inline">
                                     <input type="checkbox" name="allowed_role_codes[]" value="{{ $role->code }}">
-                                    <span class="role-permission-copy">
+                                    <span class="role-permission-inline-copy">
                                         <strong>{{ $role->name }}</strong>
                                         <small>{{ strtoupper($role->code) }}</small>
                                     </span>
@@ -184,16 +184,16 @@
                     <button class="toolbar-button" type="submit">Tambah Garis</button>
                 </form>
 
-                <div class="list-stack">
+                <div class="connection-list">
                     @foreach ($flow->connections as $connection)
-                        <div class="list-card">
-                            <div>
+                        <div class="connection-row">
+                            <div class="connection-row-name">
                                 <strong>{{ $connection->fromStep->name }} → {{ $connection->toStep->name }}</strong>
                             </div>
-                            <form method="POST" action="{{ route('master-flows.connections.destroy', [$flow, $connection]) }}">
+                            <form method="POST" action="{{ route('master-flows.connections.destroy', [$flow, $connection]) }}" class="connection-row-action">
                                 @csrf
                                 @method('DELETE')
-                                <button class="toolbar-button toolbar-button-danger" type="submit">Hapus Garis</button>
+                                <button class="toolbar-button toolbar-button-danger toolbar-button-small" type="submit">Hapus Garis</button>
                             </form>
                         </div>
                     @endforeach
@@ -240,11 +240,11 @@
                                 </div>
                                 <div class="form-field">
                                     <label>Role Yang Boleh Update Proses Ini</label>
-                                    <div class="role-permission-grid">
+                                    <div class="role-permission-list">
                                         @foreach ($roles as $role)
-                                            <label class="role-permission-option">
+                                            <label class="role-permission-inline">
                                                 <input type="checkbox" name="allowed_role_codes[]" value="{{ $role->code }}" @checked(in_array($role->code, $step->allowed_role_codes ?? [], true))>
-                                                <span class="role-permission-copy">
+                                                <span class="role-permission-inline-copy">
                                                     <strong>{{ $role->name }}</strong>
                                                     <small>{{ strtoupper($role->code) }}</small>
                                                 </span>
