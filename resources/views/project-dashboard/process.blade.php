@@ -124,29 +124,6 @@
 
             <article class="process-card process-card-checklist">
                 <p class="eyebrow">Daftar Checklist</p>
-                @php
-                    $resolveDocumentHref = function (?string $link): ?string {
-                        if (blank($link)) {
-                            return null;
-                        }
-
-                        $link = trim($link);
-
-                        if (preg_match('/^https?:\/\//i', $link) || preg_match('/^file:\/\//i', $link)) {
-                            return $link;
-                        }
-
-                        if (preg_match('/^\\\\\\\\/', $link)) {
-                            return 'file:' . str_replace('\\', '/', $link);
-                        }
-
-                        if (preg_match('/^[a-zA-Z]:[\\\\\\/]/', $link)) {
-                            return 'file:///' . str_replace(['\\', ' '], ['/', '%20'], $link);
-                        }
-
-                        return $link;
-                    };
-                @endphp
 
                 <div class="table-shell checklist-table-shell">
                     <table class="admin-table checklist-table">
@@ -171,7 +148,6 @@
                         <tbody>
                             @foreach ($process->checklists as $item)
                                 @php
-                                    $documentHref = $resolveDocumentHref($item->document_link);
                                     $updateFormId = 'checklist-update-' . $item->id;
                                 @endphp
                                 <tr class="{{ $item->is_done ? 'checklist-row-done' : 'checklist-row-pending' }}">
@@ -191,8 +167,8 @@
                                                     value="{{ $item->document_link }}"
                                                     placeholder="https:// / \\\\server\\folder / D:\\folder\\file"
                                                 >
-                                                @if ($item->document_link && $documentHref)
-                                                    <a class="table-icon-button table-icon-button-link" href="{{ $documentHref }}" target="_blank" rel="noopener noreferrer" title="Buka link dokumen" aria-label="Buka link dokumen">
+                                                @if ($item->document_link)
+                                                    <a class="table-icon-button table-icon-button-link" href="{{ route('projects.processes.checklists.open', [$project, $process, $item]) }}" target="_blank" rel="noopener noreferrer" title="Buka link dokumen" aria-label="Buka link dokumen">
                                                         <svg viewBox="0 0 24 24" aria-hidden="true">
                                                             <path d="M14 5h5v5"></path>
                                                             <path d="M10 14 19 5"></path>
@@ -243,8 +219,8 @@
                                         </td>
                                         <td class="checklist-label-cell"><strong>{{ $item->label }}</strong></td>
                                         <td>
-                                                @if ($item->document_link && $documentHref)
-                                                    <a class="table-icon-button table-icon-button-link" href="{{ $documentHref }}" target="_blank" rel="noopener noreferrer" title="Buka link dokumen" aria-label="Buka link dokumen">
+                                                @if ($item->document_link)
+                                                    <a class="table-icon-button table-icon-button-link" href="{{ route('projects.processes.checklists.open', [$project, $process, $item]) }}" target="_blank" rel="noopener noreferrer" title="Buka link dokumen" aria-label="Buka link dokumen">
                                                         <svg viewBox="0 0 24 24" aria-hidden="true">
                                                             <path d="M14 5h5v5"></path>
                                                             <path d="M10 14 19 5"></path>

@@ -7,12 +7,22 @@ use App\Models\ProjectProcess;
 use App\Models\ProjectProcessChecklist;
 use App\Support\ProjectProcessActivityService;
 use App\Support\ProjectProgressService;
+use Illuminate\Http\Response;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Validator;
 
 class ProjectProcessChecklistController extends Controller
 {
+    private function ensureChecklistBelongsToProcess(Project $project, ProjectProcess $process, ProjectProcessChecklist $checklist): void
+    {
+        abort_unless(
+            (int) $process->project_id === (int) $project->getKey()
+            && (int) $checklist->project_process_id === (int) $process->getKey(),
+            404,
+        );
+    }
+
     private function configureChecklistValidation(Validator $validator): void
     {
         $validator->after(function (Validator $validator): void {
@@ -31,6 +41,40 @@ class ProjectProcessChecklistController extends Controller
 
             $validator->errors()->add('document_link', 'Link dokumen bisa berupa URL, file://, path server lokal \\\\server\\folder, atau path drive lokal.');
         });
+    }
+
+    private function isRemoteDocumentUrl(string $documentLink): bool
+    {
+        return (bool) preg_match('/^https?:\/\//i', $documentLink);
+    }
+
+    private function normalizeDocumentPath(string $documentLink): string
+    {
+        $documentLink = trim($documentLink);
+
+        if (preg_match('/^file:\/\//i', $documentLink)) {
+            $path = rawurldecode((string) parse_url($documentLink, PHP_URL_PATH));
+
+            if (DIRECTORY_SEPARATOR === '\\') {
+                return preg_replace('/^\//', '', str_replace('/', '\\', $path)) ?? $path;
+            }
+
+            return $path;
+        }
+
+        if (preg_match('/^\\\\\\\\/', $documentLink)) {
+            return DIRECTORY_SEPARATOR === '\\'
+                ? $documentLink
+                : str_replace('\\', '/', $documentLink);
+        }
+
+        if (preg_match('/^[a-zA-Z]:[\\\\\\/]/', $documentLink)) {
+            return DIRECTORY_SEPARATOR === '\\'
+                ? str_replace('/', '\\', $documentLink)
+                : $documentLink;
+        }
+
+        return $documentLink;
     }
 
     public function store(Request $request, Project $project, ProjectProcess $process, ProjectProgressService $progressService, ProjectProcessActivityService $activityService): RedirectResponse
@@ -63,11 +107,7 @@ class ProjectProcessChecklistController extends Controller
 
     public function update(Request $request, Project $project, ProjectProcess $process, ProjectProcessChecklist $checklist, ProjectProgressService $progressService): RedirectResponse
     {
-        abort_unless(
-            (int) $process->project_id === (int) $project->getKey()
-            && (int) $checklist->project_process_id === (int) $process->getKey(),
-            404,
-        );
+        $this->ensureChecklistBelongsToProcess($project, $process, $checklist);
         abort_unless($request->user()?->canUpdateProcess($process), 403);
 
         $validator = validator($request->all(), [
@@ -155,13 +195,45 @@ class ProjectProcessChecklistController extends Controller
             ->with('status', 'Checklist proses berhasil diperbarui.');
     }
 
+    public function open(Request $request, Project $project, ProjectProcess $process, ProjectProcessChecklist $checklist): Response|RedirectResponse
+    {
+        $this->ensureChecklistBelongsToProcess($project, $process, $checklist);
+
+        $documentLink = trim((string) $checklist->document_link);
+
+        if ($documentLink === '') {
+            return redirect()
+                ->route('projects.processes.show', [$project, $process])
+                ->withErrors(['document_link' => 'Link dokumen belum diisi untuk checklist ini.']);
+        }
+
+        if ($this->isRemoteDocumentUrl($documentLink)) {
+            return redirect()->away($documentLink);
+        }
+
+        $documentPath = $this->normalizeDocumentPath($documentLink);
+
+        if (! is_file($documentPath) || ! is_readable($documentPath)) {
+            return redirect()
+                ->route('projects.processes.show', [$project, $process])
+                ->withErrors([
+                    'document_link' => 'Dokumen tidak bisa dibuka dari server aplikasi. Pastikan path benar dan server aplikasi memiliki akses ke folder/share tersebut.',
+                ]);
+        }
+
+        $headers = [];
+        $mimeType = @mime_content_type($documentPath);
+
+        if (is_string($mimeType) && $mimeType !== '') {
+            $headers['Content-Type'] = $mimeType;
+        }
+
+        return response()->file($documentPath, $headers);
+    }
+
     public function destroy(Project $project, ProjectProcess $process, ProjectProcessChecklist $checklist, ProjectProgressService $progressService, ProjectProcessActivityService $activityService): RedirectResponse
     {
-        abort_unless(
-            (int) $process->project_id === (int) $project->getKey()
-            && (int) $checklist->project_process_id === (int) $process->getKey(),
-            404,
-        );
+        $this->ensureChecklistBelongsToProcess($project, $process, $checklist);
         abort_unless(request()->user()?->canUpdateProcess($process), 403);
         $activityService->log($process, request()->user(), 'checklist_deleted', 'Checklist proses dihapus.', [
             'checklist_id' => $checklist->id,

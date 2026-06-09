@@ -36,6 +36,7 @@ Route::middleware('auth')->group(function (): void {
         Route::get('/{project}/processes/{process}', [ProjectDashboardController::class, 'showProcess'])->middleware('permission:process_view')->name('processes.show');
         Route::put('/{project}/processes/{process}/target', [ProjectDashboardController::class, 'updateProcessTarget'])->name('processes.target.update');
         Route::post('/{project}/processes/{process}/checklists', [ProjectProcessChecklistController::class, 'store'])->name('processes.checklists.store');
+        Route::get('/{project}/processes/{process}/checklists/{checklist}/open', [ProjectProcessChecklistController::class, 'open'])->middleware('permission:process_view')->name('processes.checklists.open');
         Route::put('/{project}/processes/{process}/checklists/{checklist}', [ProjectProcessChecklistController::class, 'update'])->name('processes.checklists.update');
         Route::delete('/{project}/processes/{process}/checklists/{checklist}', [ProjectProcessChecklistController::class, 'destroy'])->name('processes.checklists.destroy');
         Route::post('/{project}/processes/{process}/comments', [ProjectProcessCommentController::class, 'store'])->name('processes.comments.store');
