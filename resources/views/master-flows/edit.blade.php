@@ -90,7 +90,7 @@
                 <div class="flow-chart flow-chart-editor" data-layout-stage>
                     <svg class="flow-lines" viewBox="0 0 1200 760" preserveAspectRatio="none" data-layout-lines>
                         <defs>
-                            <marker id="editor-arrow" viewBox="0 0 12 12" markerWidth="6" markerHeight="6" refX="10" refY="6" orient="auto" markerUnits="strokeWidth">
+                            <marker id="editor-arrow" viewBox="0 0 12 12" markerWidth="8" markerHeight="8" refX="13.2" refY="6" orient="auto" markerUnits="userSpaceOnUse">
                                 <path d="M 0 0 L 12 6 L 0 12 z" fill="#445463"></path>
                             </marker>
                         </defs>
@@ -127,11 +127,11 @@
                     <div class="form-grid">
                         <div class="form-field">
                             <label>Posisi X</label>
-                            <input name="position_x" type="number" min="2" max="96" step="0.1" value="12" required>
+                            <input name="position_x" type="number" min="0" max="100" step="0.1" value="12" required>
                         </div>
                         <div class="form-field">
                             <label>Posisi Y</label>
-                            <input name="position_y" type="number" min="4" max="96" step="0.1" value="12" required>
+                            <input name="position_y" type="number" min="0" max="100" step="0.1" value="12" required>
                         </div>
                     </div>
                     <div class="form-field">
@@ -231,11 +231,11 @@
                                 <div class="form-grid">
                                     <div class="form-field">
                                         <label>X</label>
-                                        <input name="position_x" type="number" min="2" max="96" step="0.1" value="{{ $step->position_x }}" required>
+                                        <input name="position_x" type="number" min="0" max="100" step="0.1" value="{{ $step->position_x }}" required>
                                     </div>
                                     <div class="form-field">
                                         <label>Y</label>
-                                        <input name="position_y" type="number" min="4" max="96" step="0.1" value="{{ $step->position_y }}" required>
+                                        <input name="position_y" type="number" min="0" max="100" step="0.1" value="{{ $step->position_y }}" required>
                                     </div>
                                 </div>
                                 <div class="form-field">
