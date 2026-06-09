@@ -53,10 +53,20 @@ class ProjectProcessChecklistController extends Controller
         $documentLink = trim($documentLink);
 
         if (preg_match('/^file:\/\//i', $documentLink)) {
-            $path = rawurldecode((string) parse_url($documentLink, PHP_URL_PATH));
+            $parsedUrl = parse_url($documentLink);
+            $path = rawurldecode((string) ($parsedUrl['path'] ?? ''));
+            $host = (string) ($parsedUrl['host'] ?? '');
+
+            if ($host !== '' && $host !== 'localhost') {
+                if (DIRECTORY_SEPARATOR === '\\') {
+                    return '\\\\' . $host . '\\' . ltrim(str_replace('/', '\\', $path), '\\');
+                }
+
+                return '//' . $host . '/' . ltrim($path, '/');
+            }
 
             if (DIRECTORY_SEPARATOR === '\\') {
-                return preg_replace('/^\//', '', str_replace('/', '\\', $path)) ?? $path;
+                return preg_replace('/^\/+/', '', str_replace('/', '\\', $path)) ?? $path;
             }
 
             return $path;
