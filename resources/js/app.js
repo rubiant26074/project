@@ -196,9 +196,10 @@ if (flowLayoutEditor) {
     const stage = flowLayoutEditor.querySelector('[data-layout-stage]');
     const linesSvg = flowLayoutEditor.querySelector('[data-layout-lines]');
     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
-    const bounds = { width: 1200, height: 760 };
-    const nodeSize = { width: 170, height: 86 };
-    const edgeOverlap = 4;
+    const nodeSize = { width: 160, height: 88 };
+    const gridSnap = { x: 20, y: 20 };
+    const stageMargin = 20;
+    const edgeOverlap = 0;
     const rawSteps = JSON.parse(flowLayoutEditor.dataset.steps ?? '[]');
     const rawConnections = JSON.parse(flowLayoutEditor.dataset.connections ?? '[]');
     const steps = rawSteps.map((step) => ({
@@ -234,8 +235,39 @@ if (flowLayoutEditor) {
     const nodeMap = new Map();
     const handleMap = new Map();
 
+    function getBounds() {
+        return {
+            width: stage.clientWidth || 1200,
+            height: stage.clientHeight || 760,
+        };
+    }
+
+    function syncStageGeometry() {
+        const bounds = getBounds();
+        linesSvg.setAttribute('viewBox', `0 0 ${bounds.width} ${bounds.height}`);
+    }
+
+    function getEditorLimits() {
+        const bounds = getBounds();
+
+        return {
+            minX: pixelToPercentX(stageMargin + (nodeSize.width / 2)),
+            maxX: pixelToPercentX(bounds.width - stageMargin - (nodeSize.width / 2)),
+            minY: pixelToPercentY(stageMargin),
+            maxY: pixelToPercentY(bounds.height - stageMargin - nodeSize.height),
+        };
+    }
+
     renderNodes();
+    syncStageGeometry();
     renderLines();
+
+    window.addEventListener('resize', () => {
+        steps.forEach(clampStepPosition);
+        syncStageGeometry();
+        steps.forEach(syncNodePosition);
+        renderLines();
+    });
 
     saveButton?.addEventListener('click', async () => {
         saveButton.disabled = true;
@@ -270,7 +302,24 @@ if (flowLayoutEditor) {
             });
 
             if (!response.ok) {
-                throw new Error('Gagal menyimpan layout');
+                let message = 'Layout master flow belum berhasil disimpan.';
+
+                try {
+                    const payload = await response.json();
+
+                    if (payload?.message) {
+                        message = payload.message;
+                    }
+
+                    const firstError = Object.values(payload?.errors ?? {})[0]?.[0];
+                    if (firstError) {
+                        message = firstError;
+                    }
+                } catch (error) {
+                    // ignore JSON parse issue and use generic message
+                }
+
+                throw new Error(message);
             }
 
             steps.forEach((step) => {
@@ -294,7 +343,7 @@ if (flowLayoutEditor) {
             }, 1200);
         } catch (error) {
             saveButton.textContent = 'Coba Lagi';
-            window.alert('Layout master flow belum berhasil disimpan.');
+            window.alert(error.message || 'Layout master flow belum berhasil disimpan.');
         } finally {
             window.setTimeout(() => {
                 saveButton.disabled = false;
@@ -326,6 +375,8 @@ if (flowLayoutEditor) {
 
     function renderNodes() {
         steps.forEach((step) => {
+            clampStepPosition(step);
+
             const node = document.createElement('button');
             node.type = 'button';
             node.className = `flow-node flow-node-${step.status} flow-node-editor`;
@@ -359,11 +410,14 @@ if (flowLayoutEditor) {
             }
 
             const rect = stage.getBoundingClientRect();
-            const rawX = ((event.clientX - rect.left) / rect.width) * 100;
-            const rawY = ((event.clientY - rect.top) / rect.height) * 100;
+            const rawX = event.clientX - rect.left;
+            const rawY = event.clientY - rect.top;
+            const snappedX = snapToGrid(rawX, gridSnap.x);
+            const snappedY = snapToGrid(rawY, gridSnap.y);
+            const limits = getEditorLimits();
 
-            step.position_x = clamp(rawX, 7, 93);
-            step.position_y = clamp(rawY, 4, 90);
+            step.position_x = clamp(pixelToPercentX(snappedX), limits.minX, limits.maxX);
+            step.position_y = clamp(pixelToPercentY(snappedY), limits.minY, limits.maxY);
 
             syncNodePosition(step);
             renderLines();
@@ -387,6 +441,8 @@ if (flowLayoutEditor) {
     }
 
     function syncNodePosition(step) {
+        clampStepPosition(step);
+
         const node = nodeMap.get(step.id);
         if (!node) {
             return;
@@ -396,6 +452,12 @@ if (flowLayoutEditor) {
         node.style.top = `${step.position_y}%`;
         node.querySelector('[data-x]').textContent = step.position_x.toFixed(1);
         node.querySelector('[data-y]').textContent = step.position_y.toFixed(1);
+    }
+
+    function clampStepPosition(step) {
+        const limits = getEditorLimits();
+        step.position_x = clamp(step.position_x, limits.minX, limits.maxX);
+        step.position_y = clamp(step.position_y, limits.minY, limits.maxY);
     }
 
     function renderLines() {
@@ -474,6 +536,7 @@ if (flowLayoutEditor) {
     }
 
     function getNodeBox(step) {
+        const bounds = getBounds();
         const left = (step.position_x / 100) * bounds.width - nodeSize.width / 2;
         const top = (step.position_y / 100) * bounds.height;
 
@@ -579,8 +642,10 @@ if (flowLayoutEditor) {
             }
 
             const rect = stage.getBoundingClientRect();
-            const rawX = ((event.clientX - rect.left) / rect.width) * 100;
-            const rawY = ((event.clientY - rect.top) / rect.height) * 100;
+            const rawX = event.clientX - rect.left;
+            const rawY = event.clientY - rect.top;
+            const snappedX = pixelToPercentX(snapToGrid(rawX, gridSnap.x));
+            const snappedY = pixelToPercentY(snapToGrid(rawY, gridSnap.y));
 
             if (type === 'start') {
                 const fromStep = steps.find((step) => step.id === connection.from_id);
@@ -589,15 +654,15 @@ if (flowLayoutEditor) {
                     return;
                 }
 
-                const snappedPoint = snapPointToNodeEdge(rawX, rawY, getNodeBox(fromStep));
+                const snappedPoint = snapPointToNodeEdge(snappedX, snappedY, getNodeBox(fromStep));
                 connection.start_x = snappedPoint.x;
                 connection.start_y = snappedPoint.y;
             } else if (type === 'middle1') {
-                connection.bend_x = clamp(rawX, 2, 98);
-                connection.bend_y = clamp(rawY, 2, 98);
+                connection.bend_x = clamp(snappedX, 2, 98);
+                connection.bend_y = clamp(snappedY, 2, 98);
             } else if (type === 'middle2') {
-                connection.mid2_x = clamp(rawX, 2, 98);
-                connection.mid2_y = clamp(rawY, 2, 98);
+                connection.mid2_x = clamp(snappedX, 2, 98);
+                connection.mid2_y = clamp(snappedY, 2, 98);
             } else {
                 const toStep = steps.find((step) => step.id === connection.to_id);
 
@@ -605,7 +670,7 @@ if (flowLayoutEditor) {
                     return;
                 }
 
-                const snappedPoint = snapPointToNodeEdge(rawX, rawY, getNodeBox(toStep));
+                const snappedPoint = snapPointToNodeEdge(snappedX, snappedY, getNodeBox(toStep));
                 connection.end_x = snappedPoint.x;
                 connection.end_y = snappedPoint.y;
             }
@@ -699,6 +764,7 @@ if (flowLayoutEditor) {
     }
 
     function percentPointToPixel(percentX, percentY) {
+        const bounds = getBounds();
         return {
             x: (percentX / 100) * bounds.width,
             y: (percentY / 100) * bounds.height,
@@ -750,26 +816,26 @@ if (flowLayoutEditor) {
         if (nearestSide === 'left') {
             return {
                 x: pixelToPercentX(nodeBox.left + edgeOverlap),
-                y: pixelToPercentY(clamp(point.y, nodeBox.top + 4, nodeBox.bottom - 4)),
+                y: pixelToPercentY(snapToGrid(clamp(point.y, nodeBox.top + 4, nodeBox.bottom - 4), gridSnap.y)),
             };
         }
 
         if (nearestSide === 'right') {
             return {
                 x: pixelToPercentX(nodeBox.right - edgeOverlap),
-                y: pixelToPercentY(clamp(point.y, nodeBox.top + 4, nodeBox.bottom - 4)),
+                y: pixelToPercentY(snapToGrid(clamp(point.y, nodeBox.top + 4, nodeBox.bottom - 4), gridSnap.y)),
             };
         }
 
         if (nearestSide === 'top') {
             return {
-                x: pixelToPercentX(clamp(point.x, nodeBox.left + 4, nodeBox.right - 4)),
+                x: pixelToPercentX(snapToGrid(clamp(point.x, nodeBox.left + 4, nodeBox.right - 4), gridSnap.x)),
                 y: pixelToPercentY(nodeBox.top + edgeOverlap),
             };
         }
 
         return {
-            x: pixelToPercentX(clamp(point.x, nodeBox.left + 4, nodeBox.right - 4)),
+            x: pixelToPercentX(snapToGrid(clamp(point.x, nodeBox.left + 4, nodeBox.right - 4), gridSnap.x)),
             y: pixelToPercentY(nodeBox.bottom - edgeOverlap),
         };
     }
@@ -787,14 +853,20 @@ if (flowLayoutEditor) {
     }
 
     function pixelToPercentX(pixel) {
+        const bounds = getBounds();
         return (pixel / bounds.width) * 100;
     }
 
     function pixelToPercentY(pixel) {
+        const bounds = getBounds();
         return (pixel / bounds.height) * 100;
     }
 
     function clamp(value, min, max) {
         return Math.min(Math.max(value, min), max);
+    }
+
+    function snapToGrid(value, size) {
+        return Math.round(value / size) * size;
     }
 }
