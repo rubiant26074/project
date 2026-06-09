@@ -9,9 +9,30 @@ use App\Support\ProjectProcessActivityService;
 use App\Support\ProjectProgressService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Validator;
 
 class ProjectProcessChecklistController extends Controller
 {
+    private function configureChecklistValidation(Validator $validator): void
+    {
+        $validator->after(function (Validator $validator): void {
+            $documentLink = trim((string) $validator->getData()['document_link'] ?? '');
+
+            if ($documentLink === '') {
+                return;
+            }
+
+            if (
+                filter_var($documentLink, FILTER_VALIDATE_URL)
+                || preg_match('/^(file:\/\/|\\\\\\\\|[a-zA-Z]:[\\\\\\/]).+$/', $documentLink)
+            ) {
+                return;
+            }
+
+            $validator->errors()->add('document_link', 'Link dokumen bisa berupa URL, file://, path server lokal \\\\server\\folder, atau path drive lokal.');
+        });
+    }
+
     public function store(Request $request, Project $project, ProjectProcess $process, ProjectProgressService $progressService, ProjectProcessActivityService $activityService): RedirectResponse
     {
         abort_unless((int) $process->project_id === (int) $project->getKey(), 404);
@@ -49,14 +70,16 @@ class ProjectProcessChecklistController extends Controller
         );
         abort_unless($request->user()?->canUpdateProcess($process), 403);
 
-        $validated = $request->validate([
+        $validator = validator($request->all(), [
             'label' => ['required', 'string', 'max:255'],
             'sort_order' => ['required', 'integer', 'min:0'],
             'is_done' => ['nullable', 'boolean'],
-            'document_link' => ['nullable', 'url', 'max:2048'],
+            'document_link' => ['nullable', 'string', 'max:2048'],
             'target_start' => ['nullable', 'date'],
             'target_finish' => ['nullable', 'date', 'after_or_equal:target_start'],
         ]);
+        $this->configureChecklistValidation($validator);
+        $validated = $validator->validate();
 
         $isDone = (bool) ($validated['is_done'] ?? false);
 

@@ -57,6 +57,32 @@ document.querySelectorAll('.permission-select').forEach((select) => {
     });
 });
 
+const commentModal = document.querySelector('[data-comment-modal]');
+const commentModalOpener = document.querySelector('[data-comment-modal-open]');
+
+if (commentModal && commentModalOpener) {
+    const closeButtons = Array.from(document.querySelectorAll('[data-comment-modal-close]'));
+
+    commentModalOpener.addEventListener('click', () => {
+        commentModal.hidden = false;
+        document.body.style.overflow = 'hidden';
+    });
+
+    closeButtons.forEach((button) => {
+        button.addEventListener('click', () => {
+            commentModal.hidden = true;
+            document.body.style.overflow = '';
+        });
+    });
+
+    window.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && !commentModal.hidden) {
+            commentModal.hidden = true;
+            document.body.style.overflow = '';
+        }
+    });
+}
+
 const scrollPreservePage = document.querySelector('[data-preserve-scroll-page]');
 
 if (scrollPreservePage) {
@@ -141,54 +167,6 @@ if (scrollPreservePage) {
 }
 
 const flowLayoutEditor = document.querySelector('[data-flow-layout-editor]');
-
-const checklistLinkForms = Array.from(document.querySelectorAll('[data-checklist-link-form]'));
-
-checklistLinkForms.forEach((form) => {
-    const toggle = form.querySelector('[data-checklist-toggle]');
-    const documentLinkInput = form.querySelector('[data-document-link-input]');
-
-    if (!toggle || !documentLinkInput) {
-        return;
-    }
-
-    toggle.addEventListener('change', () => {
-        if (toggle.checked) {
-            const promptValue = documentLinkInput.value || 'https://';
-            const documentLink = window.prompt('Masukkan link dokumen untuk checklist ini:', promptValue);
-
-            if (documentLink === null) {
-                toggle.checked = false;
-                return;
-            }
-
-            const trimmedLink = documentLink.trim();
-
-            if (!trimmedLink) {
-                window.alert('Link dokumen wajib diisi saat checklist ditandai selesai.');
-                toggle.checked = false;
-                return;
-            }
-
-            try {
-                const parsedUrl = new URL(trimmedLink);
-
-                if (!['http:', 'https:'].includes(parsedUrl.protocol)) {
-                    throw new Error('Invalid protocol');
-                }
-
-                documentLinkInput.value = trimmedLink;
-            } catch (error) {
-                window.alert('Link dokumen harus berupa URL yang valid, misalnya https://domain.com/file');
-                toggle.checked = false;
-                return;
-            }
-        }
-
-        window.projectControlStoreScrollState?.();
-        form.submit();
-    });
-});
 
 if (flowLayoutEditor) {
     const saveButton = document.querySelector('[data-layout-save]');
