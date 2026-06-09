@@ -66,7 +66,7 @@ class ProjectProcessChecklistController extends Controller
             }
 
             if (DIRECTORY_SEPARATOR === '\\') {
-                return preg_replace('/^\/+/', '', str_replace('/', '\\', $path)) ?? $path;
+                return ltrim(str_replace('/', '\\', $path), '\\');
             }
 
             return $path;
@@ -205,6 +205,27 @@ class ProjectProcessChecklistController extends Controller
             ->with('status', 'Checklist proses berhasil diperbarui.');
     }
 
+    private function canOpenDocumentPath(string $documentPath): bool
+    {
+        if (is_file($documentPath) && is_readable($documentPath)) {
+            return true;
+        }
+
+        if ($documentPath === '') {
+            return false;
+        }
+
+        $handle = @fopen($documentPath, 'rb');
+
+        if (is_resource($handle)) {
+            fclose($handle);
+
+            return true;
+        }
+
+        return false;
+    }
+
     public function open(Request $request, Project $project, ProjectProcess $process, ProjectProcessChecklist $checklist): Response|RedirectResponse
     {
         $this->ensureChecklistBelongsToProcess($project, $process, $checklist);
@@ -223,7 +244,7 @@ class ProjectProcessChecklistController extends Controller
 
         $documentPath = $this->normalizeDocumentPath($documentLink);
 
-        if (! is_file($documentPath) || ! is_readable($documentPath)) {
+        if (! $this->canOpenDocumentPath($documentPath)) {
             return redirect()
                 ->route('projects.processes.show', [$project, $process])
                 ->withErrors([
