@@ -9,13 +9,15 @@
 
     <main class="tv-project-page">
         <header class="tv-project-header">
-            <a class="tv-project-back" href="{{ route('dashboard') }}" aria-label="Kembali ke dashboard">&lsaquo;</a>
+            <a class="tv-project-back" href="{{ route('dashboard.tv1') }}" aria-label="Kembali ke Dashboard TV1">&lsaquo;</a>
             <div>
                 <h1>{{ config('app.name') }} - DETAIL PROJECT</h1>
                 <p>End to End Project Monitoring</p>
             </div>
             <div class="tv-project-header-actions">
                 <span>Last Update : {{ now()->format('d M Y H:i') }}</span>
+                <a href="{{ route('dashboard.tv1') }}">Dashboard TV1</a>
+                <a href="{{ route('dashboard') }}">Home Dashboard</a>
                 @if (auth()->user()->canAccess('project_update'))
                     <a href="{{ route('projects.edit', $project) }}">Edit Project</a>
                 @endif
@@ -55,7 +57,11 @@
             @forelse ([0, 1] as $loopIndex)
                 <div class="tv-project-flow-track" @if ($loopIndex === 1) aria-hidden="true" @endif>
                     @foreach ($processes as $index => $process)
-                        <article class="tv-project-step tv-project-step-{{ $statusClass[$process->status] ?? 'pending' }} @if ($activeProcess && $activeProcess->is($process)) is-current @endif">
+                        <a
+                            class="tv-project-step tv-project-step-{{ $statusClass[$process->status] ?? 'pending' }} @if ($activeProcess && $activeProcess->is($process)) is-current @endif"
+                            href="{{ route('projects.processes.show', [$project, $process]) }}"
+                            @if ($loopIndex === 1) tabindex="-1" @endif
+                        >
                             <div class="tv-project-step-icon">
                                 @switch(($index % 6) + 1)
                                     @case(1)
@@ -80,7 +86,7 @@
                             <strong>{{ $index + 1 }}. {{ $process->name }}</strong>
                             <small>{{ $process->target_finish?->format('d M Y') ?? '-' }}</small>
                             <em>{{ $statusLabel[$process->status] ?? ucfirst($process->status) }}</em>
-                        </article>
+                        </a>
                     @endforeach
                 </div>
             @empty
