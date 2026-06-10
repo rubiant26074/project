@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MasterFlowController;
 use App\Http\Controllers\MyTaskController;
 use App\Http\Controllers\ProjectDashboardController;
@@ -21,19 +20,9 @@ Route::middleware('guest')->group(function (): void {
 
 Route::middleware('auth')->group(function (): void {
     Route::post('/logout', [AuthController::class, 'destroy'])->name('logout');
-    
-    // Root route redirects to dashboard
-    Route::get('/', function () {
-        return redirect()->route('dashboard');
-    });
-    
-    Route::get('/dashboard', [ProjectDashboardController::class, 'index'])->middleware('permission:dashboard_view')->name('dashboard');
+    Route::get('/', [ProjectDashboardController::class, 'index'])->middleware('permission:dashboard_view')->name('dashboard');
     Route::get('/dashboard-tv1', [ProjectDashboardController::class, 'tv1'])->middleware('permission:dashboard_view')->name('dashboard.tv1');
     Route::get('/tugas-saya', [MyTaskController::class, 'index'])->middleware('permission:process_view')->name('my-tasks.index');
-
-    // New Project Overview and Detail Dashboard Routes
-    Route::get('/projects-overview', [DashboardController::class, 'projectOverview'])->name('projects.overview');
-    Route::get('/projects-detail/{id}', [DashboardController::class, 'projectDetail'])->name('projects.detail');
 
     Route::prefix('projects')->name('projects.')->group(function (): void {
         Route::get('/create', [ProjectController::class, 'create'])->middleware('permission:project_create')->name('create');
