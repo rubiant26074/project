@@ -460,7 +460,34 @@ body[data-theme='dark-steel'] .theme-select,
 body[data-theme='control-room'] .theme-select {
     border-color: rgba(255, 255, 255, 0.1);
     background: rgba(255, 255, 255, 0.05);
-    color: var(--ink);
+    color: #000 !important;
+}
+
+body[data-theme='dark-steel'] .theme-select option,
+body[data-theme='control-room'] .theme-select option {
+    color: #000 !important;
+    background: #ffffff !important;
+}
+
+body[data-theme='dark-steel'] .tv-stage-card strong,
+body[data-theme='dark-steel'] .tv-stage-card small,
+body[data-theme='dark-steel'] .tv1-flow-card-header strong,
+body[data-theme='dark-steel'] .tv1-flow-card-header span,
+body[data-theme='dark-steel'] .flow-node strong,
+body[data-theme='dark-steel'] .flow-node small,
+body[data-theme='dark-steel'] .flow-node-meta,
+body[data-theme='dark-steel'] .flow-node-target,
+body[data-theme='dark-steel'] .flow-node-footer,
+body[data-theme='control-room'] .tv-stage-card strong,
+body[data-theme='control-room'] .tv-stage-card small,
+body[data-theme='control-room'] .tv1-flow-card-header strong,
+body[data-theme='control-room'] .tv1-flow-card-header span,
+body[data-theme='control-room'] .flow-node strong,
+body[data-theme='control-room'] .flow-node small,
+body[data-theme='control-room'] .flow-node-meta,
+body[data-theme='control-room'] .flow-node-target,
+body[data-theme='control-room'] .flow-node-footer {
+    color: #000 !important;
 }
 
 body[data-theme='dark-steel'] .user-badge,

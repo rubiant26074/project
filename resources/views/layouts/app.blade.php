@@ -138,7 +138,7 @@
                             <option value="industrial-clean">Industrial Clean</option>
                             <option value="dark-steel">Dark Steel</option>
                             <option value="control-room">Control Room</option>
-                            <option value="green-schneider">Green Schneider</option>
+                            <option value="green-schneider">Green Nature</option>
                         </select>
                     </div>
 
