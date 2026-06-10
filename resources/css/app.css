@@ -1460,6 +1460,17 @@ body[data-theme='control-room'] .checklist-item {
     font-weight: 950;
 }
 
+.tv-project-row {
+    cursor: pointer;
+    transition: background 0.18s ease, color 0.18s ease;
+}
+
+.tv-project-row:hover,
+.tv-project-row:focus {
+    outline: none;
+    background: color-mix(in srgb, var(--brand-green) 10%, var(--tv-panel-bg));
+}
+
 .tv-table-progress {
     display: grid;
     grid-template-columns: minmax(70px, 1fr) 36px;

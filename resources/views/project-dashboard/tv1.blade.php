@@ -73,7 +73,7 @@
                             </thead>
                             <tbody>
                                 @forelse ($overviewProjects as $index => $project)
-                                    <tr>
+                                    <tr class="tv-project-row" data-tv-project-url="{{ route('projects.tv', $project) }}" tabindex="0">
                                         <td>{{ $index + 1 }}</td>
                                         <td>{{ $project->wo_number }}</td>
                                         <td>{{ $project->project_name }}</td>

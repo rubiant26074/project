@@ -25,12 +25,33 @@ function setTheme(theme) {
 
 document.querySelectorAll('[data-tv-auto-scroll]').forEach((container) => {
     let pauseTicks = 0;
+    let isUserPaused = false;
+
+    container.addEventListener('mouseenter', () => {
+        isUserPaused = true;
+    });
+
+    container.addEventListener('mouseleave', () => {
+        isUserPaused = false;
+    });
+
+    container.addEventListener('focusin', () => {
+        isUserPaused = true;
+    });
+
+    container.addEventListener('focusout', () => {
+        isUserPaused = container.matches(':hover');
+    });
 
     window.setInterval(() => {
         const maxScroll = container.scrollHeight - container.clientHeight;
 
         if (maxScroll <= 4) {
             container.scrollTop = 0;
+            return;
+        }
+
+        if (isUserPaused) {
             return;
         }
 
@@ -48,6 +69,24 @@ document.querySelectorAll('[data-tv-auto-scroll]').forEach((container) => {
             }, 1200);
         }
     }, 80);
+});
+
+document.querySelectorAll('[data-tv-project-url]').forEach((row) => {
+    const openProject = () => {
+        const url = row.dataset.tvProjectUrl;
+
+        if (url) {
+            window.location.href = url;
+        }
+    };
+
+    row.addEventListener('click', openProject);
+    row.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            openProject();
+        }
+    });
 });
 
 document.querySelectorAll('.permission-select').forEach((select) => {
