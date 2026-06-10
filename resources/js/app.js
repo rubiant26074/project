@@ -96,6 +96,91 @@ document.querySelectorAll('.permission-select').forEach((select) => {
     });
 });
 
+document.querySelectorAll('[data-checklist-field]').forEach((input) => {
+    input.addEventListener('paste', (event) => {
+        const text = event.clipboardData?.getData('text/plain') ?? '';
+
+        if (!text.includes('\t') && !text.includes('\n')) {
+            return;
+        }
+
+        const tbody = input.closest('tbody');
+        const currentRow = input.closest('tr');
+
+        if (!tbody || !currentRow) {
+            return;
+        }
+
+        event.preventDefault();
+
+        const rows = Array.from(tbody.querySelectorAll('tr'));
+        const startRowIndex = rows.indexOf(currentRow);
+        const fieldOrder = ['document_link', 'target_start', 'target_finish'];
+        const startFieldIndex = Math.max(0, fieldOrder.indexOf(input.dataset.checklistField));
+        const pastedRows = text
+            .replace(/\r/g, '')
+            .split('\n')
+            .filter((row) => row.length > 0)
+            .map((row) => row.split('\t'));
+
+        pastedRows.forEach((columns, rowOffset) => {
+            const targetRow = rows[startRowIndex + rowOffset];
+
+            if (!targetRow) {
+                return;
+            }
+
+            columns.forEach((value, columnOffset) => {
+                const field = fieldOrder[startFieldIndex + columnOffset];
+
+                if (!field) {
+                    return;
+                }
+
+                const targetInput = targetRow.querySelector(`[data-checklist-field="${field}"]`);
+
+                if (!targetInput) {
+                    return;
+                }
+
+                targetInput.value = field.startsWith('target_') ? normalizeSpreadsheetDate(value.trim()) : value.trim();
+                targetInput.dispatchEvent(new Event('input', { bubbles: true }));
+                targetInput.dispatchEvent(new Event('change', { bubbles: true }));
+            });
+        });
+    });
+});
+
+function normalizeSpreadsheetDate(value) {
+    if (!value) {
+        return '';
+    }
+
+    if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+        return value;
+    }
+
+    const match = value.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{2,4})$/);
+
+    if (!match) {
+        return value;
+    }
+
+    let [, first, second, year] = match;
+
+    if (year.length === 2) {
+        year = `20${year}`;
+    }
+
+    const firstNumber = Number(first);
+    const secondNumber = Number(second);
+    const isDayFirst = firstNumber > 12 && secondNumber <= 12;
+    const month = (isDayFirst ? second : first).padStart(2, '0');
+    const day = (isDayFirst ? first : second).padStart(2, '0');
+
+    return `${year}-${month}-${day}`;
+}
+
 const commentModal = document.querySelector('[data-comment-modal]');
 const commentModalOpener = document.querySelector('[data-comment-modal-open]');
 

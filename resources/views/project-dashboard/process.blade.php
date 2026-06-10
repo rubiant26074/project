@@ -148,6 +148,17 @@
                     };
                 @endphp
 
+                @if ($canUpdateThisProcess)
+                    <div class="checklist-sheet-toolbar">
+                        <span>Paste dari Excel didukung untuk kolom Link Dokumen, Target Mulai, dan Target Selesai.</span>
+                        <button class="toolbar-button toolbar-button-primary toolbar-button-small" type="submit" form="checklist-bulk-update">Simpan Perubahan</button>
+                    </div>
+                    <form id="checklist-bulk-update" method="POST" action="{{ route('projects.processes.checklists.bulk-update', [$project, $process]) }}">
+                        @csrf
+                        @method('PUT')
+                    </form>
+                @endif
+
                 <div class="table-shell checklist-table-shell">
                     <table class="admin-table checklist-table">
                         <colgroup>
@@ -172,12 +183,13 @@
                             @foreach ($process->checklists as $item)
                                 @php
                                     $documentHref = $resolveDocumentHref($item->document_link);
-                                    $updateFormId = 'checklist-update-' . $item->id;
+                                    $deleteFormId = 'checklist-delete-' . $item->id;
                                 @endphp
                                 <tr class="{{ $item->is_done ? 'checklist-row-done' : 'checklist-row-pending' }}">
                                     @if ($canUpdateThisProcess)
                                         <td class="checklist-status-cell">
-                                            <input type="checkbox" name="is_done" value="1" form="{{ $updateFormId }}" @checked($item->is_done)>
+                                            <input type="hidden" name="checklists[{{ $item->id }}][is_done]" value="0" form="checklist-bulk-update">
+                                            <input type="checkbox" name="checklists[{{ $item->id }}][is_done]" value="1" form="checklist-bulk-update" @checked($item->is_done)>
                                         </td>
                                         <td class="checklist-label-cell">
                                             <strong>{{ $item->label }}</strong>
@@ -185,14 +197,15 @@
                                         <td>
                                             <div class="checklist-link-cell">
                                                 <input
-                                                    name="document_link"
+                                                    name="checklists[{{ $item->id }}][document_link]"
                                                     type="text"
-                                                    form="{{ $updateFormId }}"
+                                                    form="checklist-bulk-update"
                                                     value="{{ $item->document_link }}"
-                                                    placeholder="https:// / \\\\server\\folder / D:\\folder\\file"
+                                                    placeholder="Paste link"
+                                                    data-checklist-field="document_link"
                                                 >
                                                 @if ($item->document_link && $documentHref)
-                                                    <a class="table-icon-button table-icon-button-link" href="{{ $documentHref }}" target="_blank" rel="noopener noreferrer" title="Buka link dokumen" aria-label="Buka link dokumen">
+                                                    <a class="table-icon-button table-icon-button-link checklist-cell-action" href="{{ $documentHref }}" target="_blank" rel="noopener noreferrer" title="Buka link dokumen" aria-label="Buka link dokumen">
                                                         <svg viewBox="0 0 24 24" aria-hidden="true">
                                                             <path d="M14 5h5v5"></path>
                                                             <path d="M10 14 19 5"></path>
@@ -203,38 +216,22 @@
                                             </div>
                                         </td>
                                         <td>
-                                            <input name="target_start" type="date" form="{{ $updateFormId }}" value="{{ $item->target_start?->format('Y-m-d') }}">
+                                            <input name="checklists[{{ $item->id }}][target_start]" type="date" form="checklist-bulk-update" value="{{ $item->target_start?->format('Y-m-d') }}" data-checklist-field="target_start">
                                         </td>
                                         <td>
-                                            <input name="target_finish" type="date" form="{{ $updateFormId }}" value="{{ $item->target_finish?->format('Y-m-d') }}">
+                                            <input name="checklists[{{ $item->id }}][target_finish]" type="date" form="checklist-bulk-update" value="{{ $item->target_finish?->format('Y-m-d') }}" data-checklist-field="target_finish">
                                         </td>
                                         <td>
                                             <div class="table-action-group">
-                                                <form id="{{ $updateFormId }}" method="POST" action="{{ route('projects.processes.checklists.update', [$project, $process, $item]) }}">
-                                                    @csrf
-                                                    @method('PUT')
-                                                    <input type="hidden" name="label" value="{{ $item->label }}">
-                                                    <input type="hidden" name="sort_order" value="{{ $item->sort_order }}">
-                                                </form>
-                                                <button class="table-icon-button" type="submit" form="{{ $updateFormId }}" title="Update checklist" aria-label="Update checklist">
+                                                <button class="table-icon-button table-icon-button-danger checklist-cell-action" type="submit" form="{{ $deleteFormId }}" title="Hapus checklist" aria-label="Hapus checklist">
                                                     <svg viewBox="0 0 24 24" aria-hidden="true">
-                                                        <path d="M4 20h4l10-10-4-4L4 16v4z"></path>
-                                                        <path d="m12 6 4 4"></path>
+                                                        <path d="M3 6h18"></path>
+                                                        <path d="M8 6V4h8v2"></path>
+                                                        <path d="M19 6l-1 14H6L5 6"></path>
+                                                        <path d="M10 10v6"></path>
+                                                        <path d="M14 10v6"></path>
                                                     </svg>
                                                 </button>
-                                                <form method="POST" action="{{ route('projects.processes.checklists.destroy', [$project, $process, $item]) }}">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button class="table-icon-button table-icon-button-danger" type="submit" title="Hapus checklist" aria-label="Hapus checklist">
-                                                        <svg viewBox="0 0 24 24" aria-hidden="true">
-                                                            <path d="M3 6h18"></path>
-                                                            <path d="M8 6V4h8v2"></path>
-                                                            <path d="M19 6l-1 14H6L5 6"></path>
-                                                            <path d="M10 10v6"></path>
-                                                            <path d="M14 10v6"></path>
-                                                        </svg>
-                                                    </button>
-                                                </form>
                                             </div>
                                         </td>
                                     @else
@@ -264,6 +261,15 @@
                         </tbody>
                     </table>
                 </div>
+
+                @if ($canUpdateThisProcess)
+                    @foreach ($process->checklists as $item)
+                        <form id="checklist-delete-{{ $item->id }}" method="POST" action="{{ route('projects.processes.checklists.destroy', [$project, $process, $item]) }}">
+                            @csrf
+                            @method('DELETE')
+                        </form>
+                    @endforeach
+                @endif
 
                 @if ($canUpdateThisProcess)
                     <form method="POST" action="{{ route('projects.processes.checklists.store', [$project, $process]) }}" class="form-inline checklist-create-form">

@@ -155,6 +155,107 @@ class ProjectProcessChecklistController extends Controller
             ->with('status', 'Checklist proses berhasil diperbarui.');
     }
 
+    public function bulkUpdate(Request $request, Project $project, ProjectProcess $process, ProjectProgressService $progressService): RedirectResponse
+    {
+        abort_unless((int) $process->project_id === (int) $project->getKey(), 404);
+        abort_unless($request->user()?->canUpdateProcess($process), 403);
+
+        $validator = validator($request->all(), [
+            'checklists' => ['required', 'array'],
+            'checklists.*.is_done' => ['nullable', 'boolean'],
+            'checklists.*.document_link' => ['nullable', 'string', 'max:2048'],
+            'checklists.*.target_start' => ['nullable', 'date'],
+            'checklists.*.target_finish' => ['nullable', 'date', 'after_or_equal:checklists.*.target_start'],
+        ]);
+        $this->configureBulkChecklistValidation($validator);
+        $validated = $validator->validate();
+
+        $checklists = $process->checklists()->get()->keyBy('id');
+        $updatedCount = 0;
+
+        foreach ($validated['checklists'] as $checklistId => $payload) {
+            $checklist = $checklists->get((int) $checklistId);
+
+            if (! $checklist) {
+                continue;
+            }
+
+            $isDone = (bool) ($payload['is_done'] ?? false);
+            $documentLink = $payload['document_link'] ?? null;
+
+            if ($isDone && blank($documentLink)) {
+                return redirect()
+                    ->route('projects.processes.show', [$project, $process])
+                    ->withErrors(['document_link' => sprintf('Link dokumen wajib diisi saat checklist "%s" ditandai selesai.', $checklist->label)]);
+            }
+
+            $previousDone = $checklist->is_done;
+            $previousDocumentLink = $checklist->document_link;
+            $previousTargetStart = $checklist->target_start?->toDateString();
+            $previousTargetFinish = $checklist->target_finish?->toDateString();
+
+            $checklist->update([
+                'document_link' => $documentLink,
+                'target_start' => $payload['target_start'] ?? null,
+                'target_finish' => $payload['target_finish'] ?? null,
+                'is_done' => $isDone,
+            ]);
+
+            if ($previousDone !== $checklist->is_done) {
+                app(ProjectProcessActivityService::class)->log(
+                    $process,
+                    $request->user(),
+                    'checklist_toggled',
+                    $checklist->is_done
+                        ? sprintf('Checklist "%s" ditandai selesai.', $checklist->label)
+                        : sprintf('Checklist "%s" dibuka kembali.', $checklist->label),
+                    [
+                        'checklist_id' => $checklist->id,
+                        'is_done' => $checklist->is_done,
+                    ],
+                );
+            }
+
+            if (
+                $previousTargetStart !== $checklist->target_start?->toDateString()
+                || $previousTargetFinish !== $checklist->target_finish?->toDateString()
+            ) {
+                app(ProjectProcessActivityService::class)->log(
+                    $process,
+                    $request->user(),
+                    'checklist_target_updated',
+                    sprintf('Target tanggal checklist "%s" diperbarui.', $checklist->label),
+                    [
+                        'checklist_id' => $checklist->id,
+                        'target_start' => $checklist->target_start?->toDateString(),
+                        'target_finish' => $checklist->target_finish?->toDateString(),
+                    ],
+                );
+            }
+
+            if ($previousDocumentLink !== $checklist->document_link && filled($checklist->document_link)) {
+                app(ProjectProcessActivityService::class)->log(
+                    $process,
+                    $request->user(),
+                    'checklist_document_linked',
+                    sprintf('Link dokumen untuk checklist "%s" diperbarui.', $checklist->label),
+                    [
+                        'checklist_id' => $checklist->id,
+                        'document_link' => $checklist->document_link,
+                    ],
+                );
+            }
+
+            $updatedCount++;
+        }
+
+        $progressService->syncFromChecklist($process->fresh('checklists', 'project.processes'), $request->user());
+
+        return redirect()
+            ->route('projects.processes.show', [$project, $process])
+            ->with('status', sprintf('%d checklist proses berhasil diperbarui.', $updatedCount));
+    }
+
     public function destroy(Project $project, ProjectProcess $process, ProjectProcessChecklist $checklist, ProjectProgressService $progressService, ProjectProcessActivityService $activityService): RedirectResponse
     {
         abort_unless(
@@ -174,5 +275,27 @@ class ProjectProcessChecklistController extends Controller
         return redirect()
             ->route('projects.processes.show', [$project, $process])
             ->with('status', 'Checklist proses berhasil dihapus.');
+    }
+
+    private function configureBulkChecklistValidation(Validator $validator): void
+    {
+        $validator->after(function (Validator $validator): void {
+            foreach (($validator->getData()['checklists'] ?? []) as $index => $payload) {
+                $documentLink = trim((string) ($payload['document_link'] ?? ''));
+
+                if ($documentLink === '') {
+                    continue;
+                }
+
+                if (
+                    filter_var($documentLink, FILTER_VALIDATE_URL)
+                    || preg_match('/^(file:\/\/|\\\\\\\\|[a-zA-Z]:[\\\\\\/]).+$/', $documentLink)
+                ) {
+                    continue;
+                }
+
+                $validator->errors()->add("checklists.$index.document_link", 'Link dokumen bisa berupa URL, file://, path server lokal \\\\server\\folder, atau path drive lokal.');
+            }
+        });
     }
 }

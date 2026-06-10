@@ -3493,45 +3493,70 @@ body[data-theme='control-room'] .admin-table textarea {
 }
 
 .checklist-table-shell {
-    overflow: visible;
+    overflow: auto;
+    border: 1px solid rgba(43, 57, 72, 0.16);
+    border-radius: 10px;
+    background: var(--panel);
 }
 
 .checklist-table {
     min-width: 0;
     table-layout: fixed;
+    border-collapse: collapse;
 }
 
 .process-card-checklist {
     min-width: 0;
+    gap: 12px;
 }
 
 .checklist-table td,
 .checklist-table th {
     vertical-align: middle;
-    padding: 10px 8px;
+    padding: 0;
+    border: 1px solid rgba(43, 57, 72, 0.12);
 }
 
 .checklist-table th {
-    font-size: 0.75rem;
+    padding: 8px 10px;
+    background: color-mix(in srgb, var(--panel-muted) 84%, var(--panel));
+    color: var(--muted);
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    white-space: nowrap;
 }
 
 .checklist-table td {
-    font-size: 0.92rem;
+    height: 34px;
+    background: color-mix(in srgb, var(--panel) 92%, var(--close-soft));
+    font-size: 0.84rem;
 }
 
 .checklist-table input[type='date'],
 .checklist-table input[type='text'] {
-    min-height: 36px;
-    padding: 8px 10px;
-    font-size: 0.85rem;
+    width: 100%;
+    min-height: 34px;
+    padding: 6px 8px;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    font-size: 0.82rem;
+}
+
+.checklist-table input[type='date']:focus,
+.checklist-table input[type='text']:focus {
+    outline: 2px solid color-mix(in srgb, var(--accent-dark) 36%, transparent);
+    outline-offset: -2px;
+    background: color-mix(in srgb, var(--accent-dark) 7%, var(--panel));
 }
 
 .checklist-row-done td {
-    background: rgba(213, 229, 212, 0.34);
+    background: color-mix(in srgb, var(--close-soft) 34%, var(--panel));
 }
 
 .checklist-row-pending td {
-    background: rgba(242, 216, 222, 0.18);
+    background: color-mix(in srgb, var(--panel) 90%, var(--open-soft));
 }
 
 .checklist-status-cell {
@@ -3539,28 +3564,60 @@ body[data-theme='control-room'] .admin-table textarea {
     text-align: center;
 }
 
+.checklist-status-cell input[type='checkbox'] {
+    width: 14px;
+    height: 14px;
+    margin: 0;
+}
+
 .checklist-label-cell strong {
     display: block;
-    line-height: 1.3;
+    padding: 7px 10px;
+    line-height: 1.2;
     word-break: break-word;
 }
 
 .checklist-link-cell {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
-    gap: 6px;
     align-items: center;
 }
 
 .table-action-group {
     display: flex;
     flex-wrap: nowrap;
-    gap: 6px;
-    justify-content: flex-start;
+    gap: 4px;
+    justify-content: center;
+    padding: 3px;
 }
 
 .checklist-create-form {
-    margin-top: 14px;
+    margin-top: 2px;
+    padding: 8px;
+    border: 1px solid rgba(43, 57, 72, 0.12);
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--panel-muted) 68%, var(--panel));
+}
+
+.checklist-sheet-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 10px;
+    border: 1px solid rgba(43, 57, 72, 0.12);
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--panel-muted) 70%, var(--panel));
+    color: var(--muted);
+    font-size: 0.78rem;
+    font-weight: 700;
+}
+
+.checklist-cell-action {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    box-shadow: none;
 }
 
 .comment-fab {
