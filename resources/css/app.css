@@ -1,4 +1,4 @@
-@import 'tailwindcss';
+﻿@import 'tailwindcss';
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
@@ -1823,7 +1823,7 @@ body[data-theme='control-room'] .checklist-item {
 }
 
 .tv-project-step:not(:last-child)::after {
-    content: "›";
+    content: "â€º";
     position: absolute;
     top: 21px;
     right: -10px;
@@ -2551,7 +2551,7 @@ body[data-theme='control-room'] .flow-line {
 }
 
 .flow-connector-handle-middle2 {
-    border-color: #3b82f6;
+    border-color: var(--accent);
 }
 
 .flow-connector-handle-middle2::after {
