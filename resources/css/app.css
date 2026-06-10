@@ -3600,10 +3600,6 @@ body[data-theme='control-room'] .admin-table textarea {
 }
 
 .checklist-sheet-toolbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 12px;
     padding: 8px 10px;
     border: 1px solid rgba(43, 57, 72, 0.12);
     border-radius: 10px;
@@ -3611,6 +3607,12 @@ body[data-theme='control-room'] .admin-table textarea {
     color: var(--muted);
     font-size: 0.78rem;
     font-weight: 700;
+}
+
+.checklist-save-row {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 10px;
 }
 
 .checklist-cell-action {

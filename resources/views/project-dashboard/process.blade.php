@@ -151,7 +151,6 @@
                 @if ($canUpdateThisProcess)
                     <div class="checklist-sheet-toolbar">
                         <span>Paste dari Excel didukung untuk kolom Link Dokumen, Target Mulai, dan Target Selesai.</span>
-                        <button class="toolbar-button toolbar-button-primary toolbar-button-small" type="submit" form="checklist-bulk-update">Simpan Perubahan</button>
                     </div>
                     <form id="checklist-bulk-update" method="POST" action="{{ route('projects.processes.checklists.bulk-update', [$project, $process]) }}">
                         @csrf
@@ -269,6 +268,9 @@
                             @method('DELETE')
                         </form>
                     @endforeach
+                    <div class="checklist-save-row">
+                        <button class="toolbar-button toolbar-button-primary toolbar-button-small" type="submit" form="checklist-bulk-update">Simpan Perubahan</button>
+                    </div>
                 @endif
 
                 @if ($canUpdateThisProcess)
