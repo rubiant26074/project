@@ -2,48 +2,6 @@
 
 Aplikasi ini dibangun dengan Laravel untuk memantau progress project, master flow, dan proses delivery project industrial.
 
-## Fitur Dashboard
-
-### 1. **Project Overview Dashboard** ✨
-Dashboard utama menampilkan daftar semua project dengan fitur-fitur:
-
-- **Auto-Scroll Otomatis** 🔄
-  - Project list scroll otomatis dari kiri ke kanan
-  - Scroll berhenti otomatis ketika mouse mendekati container
-  - Resume scroll setelah mouse meninggalkan area
-  - Support manual scroll dengan 3 detik delay sebelum auto-resume
-
-- **Project Cards Interaktif** 
-  - Clickable cards untuk navigasi ke detail project
-  - Menampilkan WO Number, Project Name, Customer, Status
-  - Visual progress bar per project
-  - Status badges: AT RISK, ON TRACK, DELAY
-
-- **Header Statistics**
-  - Overall Progress percentage
-  - Total Project count
-  - Status breakdown (On Track, At Risk, Delay)
-  - Last update timestamp
-
-- **Statistics Visualization**
-  - Progress Summary (Pie Chart)
-  - Progress by Stage (Bar Chart)
-  - Department metrics (Engineering, Procurement, Production, Testing)
-
-### 2. **Project Detail Dashboard** 📊
-Halaman detail untuk setiap project dengan informasi komprehensif:
-
-- **Project Header** dengan informasi dasar dan status
-- **Overall Progress** dengan visual progress bar besar
-- **Breakdown by Department**
-  - Engineering (Drawing Approval, CTP, BOM Release)
-  - Procurement (Material Progress, SCC/PO Follow Up, Outstanding PO)
-  - Production (Fabrication, Assembly, Wiring)
-  - Testing & Delivery (Testing/FAT, Packing, Delivery)
-
-- **Progress by Stage Chart** untuk tracking tahap produksi
-- **Issues & Risk Management Table**
-
 ## Setup Lokal
 
 1. Clone repository ini.
@@ -108,34 +66,6 @@ Perintah ini akan:
 - Admin: `admin@project-control.local` / `admin12345`
 - User: `user@project-control.local` / `user12345`
 
-## Routes
-
-```php
-GET  /dashboard                    # Project Overview
-GET  /dashboard/projects           # Project Overview (alias)
-GET  /dashboard/projects/{id}      # Project Detail
-```
-
-## Struktur File
-
-```
-project/
-├── app/
-│   └── Http/
-│       └── Controllers/
-│           └── DashboardController.php
-├── resources/
-│   └── views/
-│       ├── layouts/
-│       │   └── app.blade.php
-│       └── dashboard/
-│           ├── project-overview.blade.php
-│           └── project-detail.blade.php
-├── routes/
-│   └── web.php
-└── README.md
-```
-
 ## Catatan Database
 
 - File SQLite contoh tersedia di `database/database.sqlite`
@@ -143,113 +73,63 @@ project/
 - Data awal tetap tersedia lewat seeder di `database/seeders/DatabaseSeeder.php`
 - Bila memakai `composer run setup`, database akan dibangun ulang dari migration dan seeder
 
-## Kustomisasi
+---
 
-### Update Data Projects
-Di `DashboardController.php`, ganti array projects dengan query database:
+<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
 
-```php
-// Dari dummy data:
-$projects = [...];
+<p align="center">
+<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
+<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
+<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
+<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
+</p>
 
-// Menjadi database query:
-$projects = Project::all();
+## About Laravel
+
+Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+
+- [Simple, fast routing engine](https://laravel.com/docs/routing).
+- [Powerful dependency injection container](https://laravel.com/docs/container).
+- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
+- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
+- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
+- [Robust background job processing](https://laravel.com/docs/queues).
+- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+
+Laravel is accessible, powerful, and provides tools required for large, robust applications.
+
+## Learning Laravel
+
+Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+
+In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+
+You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+
+## Agentic Development
+
+Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+
+```bash
+composer require laravel/boost --dev
+
+php artisan boost:install
 ```
 
-### Customize Colors
-Edit CSS variables di view files:
-- Primary: `#001a4d` (Dark Navy)
-- Success: `#28a745` (Green)
-- Warning: `#ffc107` (Yellow)
-- Danger: `#dc3545` (Red)
-
-### Adjust Auto-Scroll Speed
-Di `project-overview.blade.php`, ubah `scrollBy` value:
-
-```javascript
-projectsList.scrollBy({
-    left: 4,  // Change this value (pixels per scroll)
-    behavior: 'auto'
-});
-```
-
-## Dependencies
-
-- Laravel Framework 11+
-- Chart.js (via CDN)
-- CSS Grid & Flexbox (modern browsers)
-
-## Browser Support
-
-- Chrome 90+
-- Firefox 88+
-- Safari 14+
-- Edge 90+
-
-## Fitur Tambahan yang Bisa Diimplementasikan
-
-1. **Filter dan Search** untuk project list
-2. **Export ke PDF** untuk report
-3. **Real-time notifications** untuk perubahan status
-4. **Gantt chart** untuk timeline project
-5. **User roles dan permissions**
-6. **Audit trail** untuk perubahan project
-7. **Mobile responsive optimization**
-8. **Dark mode support**
-9. **WebSocket integration** untuk real-time updates
-10. **Dashboard customization** per user
-
-## Troubleshooting
-
-### Auto-scroll tidak jalan
-- Pastikan JavaScript enabled
-- Check browser console untuk errors
-- Verify element IDs match di HTML dan JS
-
-### Project tidak bisa diklik
-- Pastikan route `projects.detail` terdefinisi
-- Check `href` attribute pada project cards
-- Verify `$project->id` memiliki value
-
-### Charts tidak tampil
-- Pastikan Chart.js sudah di-load
-- Check console untuk JS errors
-- Verify canvas elements memiliki correct IDs
-
-### Styling issues
-- Clear browser cache
-- Run `npm run build` untuk rebuild assets
-- Check CSS media queries untuk responsive design
-
-## Performance Tips
-
-1. **Database Optimization**
-   - Implement pagination untuk project list
-   - Use eager loading dengan `with()` untuk relasi
-   - Add database indexes untuk frequently queried columns
-
-2. **Frontend Optimization**
-   - Minify CSS dan JavaScript
-   - Lazy load images
-   - Use service workers untuk offline support
-
-3. **Caching**
-   - Implement Redis caching untuk project statistics
-   - Cache expensive database queries
-   - Use browser caching headers
+Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
 
 ## Contributing
 
-Contributions welcome! Silakan fork repository dan submit pull request.
+Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+
+## Code of Conduct
+
+In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+
+## Security Vulnerabilities
+
+If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
 
 ## License
 
-MIT License - lihat LICENSE file untuk detail
-
-## Support
-
-Untuk pertanyaan atau issue, silakan create issue di repository ini atau hubungi developer.
-
----
-
-Made with ❤️ for PM Project Tracker
+The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).

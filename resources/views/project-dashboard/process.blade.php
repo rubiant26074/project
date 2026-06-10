@@ -63,186 +63,95 @@
             </div>
         @endif
 
-        <section class="process-layout process-layout-checklist">
-            <div class="process-side-column">
-                <article class="process-card">
-                    <div class="process-card-head">
-                        <div>
-                            <p class="eyebrow">Progress Proses</p>
-                            <h2>{{ $process->progress }}%</h2>
-                        </div>
-                        <span class="legend-chip legend-{{ $process->status }}">{{ ucfirst($process->status) }}</span>
+        <section class="process-layout process-layout-expanded">
+            <article class="process-card">
+                <div class="process-card-head">
+                    <div>
+                        <p class="eyebrow">Progress Proses</p>
+                        <h2>{{ $process->progress }}%</h2>
                     </div>
-
-                    <div class="progress-bar">
-                        <div class="progress-bar-fill" style="width: {{ $process->progress }}%;"></div>
-                    </div>
-
-                    <div class="process-stats">
-                        <div>
-                            <span>Checklist Selesai</span>
-                            <strong>{{ $process->completed_checklists }}</strong>
-                        </div>
-                        <div>
-                            <span>Checklist Pending</span>
-                            <strong>{{ $process->total_checklists - $process->completed_checklists }}</strong>
-                        </div>
-                    </div>
-                </article>
-
-                <article class="process-card">
-                    <div class="process-card-head">
-                        <div>
-                            <p class="eyebrow">Riwayat Aktivitas</p>
-                            <h2>Timeline Progress</h2>
-                        </div>
-                    </div>
-
-                    <div class="activity-timeline">
-                        @forelse ($process->histories as $history)
-                            <div class="timeline-item">
-                                <div class="timeline-marker"></div>
-                                <div class="timeline-content">
-                                    <div class="activity-card-head">
-                                        <div>
-                                            <strong>{{ $history->user?->name ?? 'System' }}</strong>
-                                            <span>{{ $history->created_at->format('d M Y H:i') }}</span>
-                                        </div>
-                                        <span class="timeline-tag">{{ str_replace('_', ' ', $history->event_type) }}</span>
-                                    </div>
-                                    <p>{{ $history->description }}</p>
-                                </div>
-                            </div>
-                        @empty
-                            <div class="empty-state">
-                                Belum ada histori aktivitas pada proses ini.
-                            </div>
-                        @endforelse
-                    </div>
-                </article>
-            </div>
-
-            <article class="process-card process-card-checklist">
-                <p class="eyebrow">Daftar Checklist</p>
-
-                <div class="table-shell checklist-table-shell">
-                    <table class="admin-table checklist-table">
-                        <colgroup>
-                            <col style="width: 54px;">
-                            <col style="width: 28%;">
-                            <col style="width: 30%;">
-                            <col style="width: 15%;">
-                            <col style="width: 15%;">
-                            <col style="width: 108px;">
-                        </colgroup>
-                        <thead>
-                            <tr>
-                                <th>Status</th>
-                                <th>Checklist</th>
-                                <th>Link Dokumen</th>
-                                <th>Target Mulai</th>
-                                <th>Target Selesai</th>
-                                <th>Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach ($process->checklists as $item)
-                                @php
-                                    $updateFormId = 'checklist-update-' . $item->id;
-                                @endphp
-                                <tr class="{{ $item->is_done ? 'checklist-row-done' : 'checklist-row-pending' }}">
-                                    @if ($canUpdateThisProcess)
-                                        <td class="checklist-status-cell">
-                                            <input type="checkbox" name="is_done" value="1" form="{{ $updateFormId }}" @checked($item->is_done)>
-                                        </td>
-                                        <td class="checklist-label-cell">
-                                            <strong>{{ $item->label }}</strong>
-                                        </td>
-                                        <td>
-                                            <div class="checklist-link-cell">
-                                                <input
-                                                    name="document_link"
-                                                    type="text"
-                                                    form="{{ $updateFormId }}"
-                                                    value="{{ $item->document_link }}"
-                                                    placeholder="https:// / \\\\server\\folder / D:\\folder\\file"
-                                                >
-                                                @if ($item->document_link)
-                                                    <a class="table-icon-button table-icon-button-link" href="{{ route('projects.processes.checklists.open', [$project, $process, $item]) }}" target="_blank" rel="noopener noreferrer" title="Buka link dokumen" aria-label="Buka link dokumen">
-                                                        <svg viewBox="0 0 24 24" aria-hidden="true">
-                                                            <path d="M14 5h5v5"></path>
-                                                            <path d="M10 14 19 5"></path>
-                                                            <path d="M19 14v4a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h4"></path>
-                                                        </svg>
-                                                    </a>
-                                                @endif
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <input name="target_start" type="date" form="{{ $updateFormId }}" value="{{ $item->target_start?->format('Y-m-d') }}">
-                                        </td>
-                                        <td>
-                                            <input name="target_finish" type="date" form="{{ $updateFormId }}" value="{{ $item->target_finish?->format('Y-m-d') }}">
-                                        </td>
-                                        <td>
-                                            <div class="table-action-group">
-                                                <form id="{{ $updateFormId }}" method="POST" action="{{ route('projects.processes.checklists.update', [$project, $process, $item]) }}">
-                                                    @csrf
-                                                    @method('PUT')
-                                                    <input type="hidden" name="label" value="{{ $item->label }}">
-                                                    <input type="hidden" name="sort_order" value="{{ $item->sort_order }}">
-                                                </form>
-                                                <button class="table-icon-button" type="submit" form="{{ $updateFormId }}" title="Update checklist" aria-label="Update checklist">
-                                                    <svg viewBox="0 0 24 24" aria-hidden="true">
-                                                        <path d="M4 20h4l10-10-4-4L4 16v4z"></path>
-                                                        <path d="m12 6 4 4"></path>
-                                                    </svg>
-                                                </button>
-                                                <form method="POST" action="{{ route('projects.processes.checklists.destroy', [$project, $process, $item]) }}">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button class="table-icon-button table-icon-button-danger" type="submit" title="Hapus checklist" aria-label="Hapus checklist">
-                                                        <svg viewBox="0 0 24 24" aria-hidden="true">
-                                                            <path d="M3 6h18"></path>
-                                                            <path d="M8 6V4h8v2"></path>
-                                                            <path d="M19 6l-1 14H6L5 6"></path>
-                                                            <path d="M10 10v6"></path>
-                                                            <path d="M14 10v6"></path>
-                                                        </svg>
-                                                    </button>
-                                                </form>
-                                            </div>
-                                        </td>
-                                    @else
-                                        <td class="checklist-status-cell">
-                                            <input type="checkbox" @checked($item->is_done) disabled>
-                                        </td>
-                                        <td class="checklist-label-cell"><strong>{{ $item->label }}</strong></td>
-                                        <td>
-                                                @if ($item->document_link)
-                                                    <a class="table-icon-button table-icon-button-link" href="{{ route('projects.processes.checklists.open', [$project, $process, $item]) }}" target="_blank" rel="noopener noreferrer" title="Buka link dokumen" aria-label="Buka link dokumen">
-                                                        <svg viewBox="0 0 24 24" aria-hidden="true">
-                                                            <path d="M14 5h5v5"></path>
-                                                            <path d="M10 14 19 5"></path>
-                                                            <path d="M19 14v4a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h4"></path>
-                                                        </svg>
-                                                    </a>
-                                                @else
-                                                    <span class="inline-meta">-</span>
-                                                @endif
-                                            </td>
-                                            <td>{{ $item->target_start?->format('d M Y') ?? '-' }}</td>
-                                            <td>{{ $item->target_finish?->format('d M Y') ?? '-' }}</td>
-                                            <td><span class="inline-meta">Lihat saja</span></td>
-                                    @endif
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
+                    <span class="legend-chip legend-{{ $process->status }}">{{ ucfirst($process->status) }}</span>
                 </div>
 
+                <div class="progress-bar">
+                    <div class="progress-bar-fill" style="width: {{ $process->progress }}%;"></div>
+                </div>
+
+                <div class="process-stats">
+                    <div>
+                        <span>Checklist Selesai</span>
+                        <strong>{{ $process->completed_checklists }}</strong>
+                    </div>
+                    <div>
+                        <span>Checklist Pending</span>
+                        <strong>{{ $process->total_checklists - $process->completed_checklists }}</strong>
+                    </div>
+                </div>
+            </article>
+
+            <article class="process-card">
+                <p class="eyebrow">Daftar Checklist</p>
+                <ul class="checklist">
+                    @foreach ($process->checklists as $item)
+                        <li class="checklist-item {{ $item->is_done ? 'is-done' : 'is-pending' }}">
+                            @if ($canUpdateThisProcess)
+                                <form method="POST" action="{{ route('projects.processes.checklists.update', [$project, $process, $item]) }}" class="checklist-form" data-checklist-link-form>
+                                    @csrf
+                                    @method('PUT')
+                                    <input type="hidden" name="label" value="{{ $item->label }}">
+                                    <input type="hidden" name="sort_order" value="{{ $item->sort_order }}">
+                                    <input type="hidden" name="document_link" value="{{ $item->document_link }}" data-document-link-input>
+                                    <div class="checklist-edit-row">
+                                        <label class="checkbox-inline checkbox-inline-grow">
+                                            <input type="checkbox" name="is_done" value="1" @checked($item->is_done) data-checklist-toggle>
+                                            <span class="checklist-copy">
+                                                <span>{{ $item->label }}</span>
+                                                @if ($item->document_link)
+                                                    <a class="document-link-badge" href="{{ $item->document_link }}" target="_blank" rel="noopener noreferrer">Link Dokumen</a>
+                                                @endif
+                                            </span>
+                                        </label>
+                                        <div class="checklist-target-grid">
+                                            <label>
+                                                <span>Target Mulai</span>
+                                                <input type="date" name="target_start" value="{{ $item->target_start?->format('Y-m-d') }}">
+                                            </label>
+                                            <label>
+                                                <span>Target Selesai</span>
+                                                <input type="date" name="target_finish" value="{{ $item->target_finish?->format('Y-m-d') }}">
+                                            </label>
+                                            <button class="toolbar-button toolbar-button-small" type="submit">Update Target</button>
+                                        </div>
+                                    </div>
+                                </form>
+                                <form method="POST" action="{{ route('projects.processes.checklists.destroy', [$project, $process, $item]) }}">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button class="toolbar-button toolbar-button-danger toolbar-button-small" type="submit">Hapus</button>
+                                </form>
+                            @else
+                                <div class="checklist-form">
+                                    <label class="checkbox-inline checkbox-inline-grow">
+                                        <input type="checkbox" @checked($item->is_done) disabled>
+                                        <span class="checklist-copy">
+                                            <span>{{ $item->label }}</span>
+                                            @if ($item->document_link)
+                                                <a class="document-link-badge" href="{{ $item->document_link }}" target="_blank" rel="noopener noreferrer">Link Dokumen</a>
+                                            @endif
+                                            <span class="checklist-target-meta">
+                                                Target mulai: {{ $item->target_start?->format('d M Y') ?? '-' }}
+                                                | Target selesai: {{ $item->target_finish?->format('d M Y') ?? '-' }}
+                                            </span>
+                                        </span>
+                                    </label>
+                                </div>
+                            @endif
+                        </li>
+                    @endforeach
+                </ul>
+
                 @if ($canUpdateThisProcess)
-                    <form method="POST" action="{{ route('projects.processes.checklists.store', [$project, $process]) }}" class="form-inline checklist-create-form">
+                    <form method="POST" action="{{ route('projects.processes.checklists.store', [$project, $process]) }}" class="form-inline">
                         @csrf
                         <input name="label" type="text" placeholder="Tambah checklist baru" required>
                         <input name="sort_order" type="number" min="0" value="{{ $process->checklists->count() + 1 }}" required>
@@ -250,36 +159,13 @@
                     </form>
                 @endif
             </article>
-        </section>
 
-        <button
-            class="comment-fab"
-            type="button"
-            data-comment-modal-open
-            aria-label="Buka komentar tim"
-            title="Buka komentar tim"
-        >
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M21 15a2 2 0 0 1-2 2H8l-5 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                <path d="M8 9h8"></path>
-                <path d="M8 13h5"></path>
-            </svg>
-        </button>
-
-        <div class="comment-modal" data-comment-modal hidden>
-            <div class="comment-modal-backdrop" data-comment-modal-close></div>
-            <div class="comment-modal-panel" role="dialog" aria-modal="true" aria-labelledby="comment-modal-title">
+            <article class="process-card">
                 <div class="process-card-head">
                     <div>
                         <p class="eyebrow">Komentar Tim</p>
-                        <h2 id="comment-modal-title">Diskusi Proses</h2>
+                        <h2>Diskusi Proses</h2>
                     </div>
-                    <button class="comment-modal-close" type="button" data-comment-modal-close aria-label="Tutup komentar">
-                        <svg viewBox="0 0 24 24" aria-hidden="true">
-                            <path d="M6 6l12 12"></path>
-                            <path d="M18 6 6 18"></path>
-                        </svg>
-                    </button>
                 </div>
 
                 <form method="POST" action="{{ route('projects.processes.comments.store', [$project, $process]) }}" class="form-stack">
@@ -315,7 +201,38 @@
                         </div>
                     @endforelse
                 </div>
-            </div>
-        </div>
+            </article>
+
+            <article class="process-card">
+                <div class="process-card-head">
+                    <div>
+                        <p class="eyebrow">Riwayat Aktivitas</p>
+                        <h2>Timeline Progress</h2>
+                    </div>
+                </div>
+
+                <div class="activity-timeline">
+                    @forelse ($process->histories as $history)
+                        <div class="timeline-item">
+                            <div class="timeline-marker"></div>
+                            <div class="timeline-content">
+                                <div class="activity-card-head">
+                                    <div>
+                                        <strong>{{ $history->user?->name ?? 'System' }}</strong>
+                                        <span>{{ $history->created_at->format('d M Y H:i') }}</span>
+                                    </div>
+                                    <span class="timeline-tag">{{ str_replace('_', ' ', $history->event_type) }}</span>
+                                </div>
+                                <p>{{ $history->description }}</p>
+                            </div>
+                        </div>
+                    @empty
+                        <div class="empty-state">
+                            Belum ada histori aktivitas pada proses ini.
+                        </div>
+                    @endforelse
+                </div>
+            </article>
+        </section>
     </main>
 @endsection

@@ -1,99 +1,190 @@
 <!DOCTYPE html>
 <html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'PM Project Tracker')</title>
-    
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
-    
-    <!-- Base Styles -->
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="csrf-token" content="{{ csrf_token() }}">
+        <title>{{ $title ?? config('app.name') }}</title>
+        @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
+            @vite(['resources/css/app.css', 'resources/js/app.js'])
+        @endif
+    </head>
+    <body data-theme="industrial-clean">
+        @if (request()->routeIs('login') || request()->routeIs('register'))
+            <div class="auth-shell">
+                @if (session('status'))
+                    <div class="flash-message">{{ session('status') }}</div>
+                @endif
 
-        html, body {
-            width: 100%;
-            height: 100%;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background-color: #f5f5f5;
-            color: #333;
-        }
+                @if ($errors->any())
+                    <div class="flash-message flash-message-error">
+                        {{ $errors->first() }}
+                    </div>
+                @endif
 
-        body {
-            line-height: 1.6;
-        }
+                @yield('content')
+            </div>
+        @elseif (request()->routeIs('dashboard.tv1') || request()->routeIs('projects.tv'))
+            <div class="tv-shell">
+                @if (session('status'))
+                    <div class="flash-message">{{ session('status') }}</div>
+                @endif
 
-        /* Typography */
-        h1, h2, h3, h4, h5, h6 {
-            line-height: 1.4;
-        }
+                @if ($errors->any())
+                    <div class="flash-message flash-message-error">
+                        {{ $errors->first() }}
+                    </div>
+                @endif
 
-        a {
-            color: #3b82f6;
-            text-decoration: none;
-            transition: color 0.3s ease;
-        }
+                @yield('content')
+            </div>
+        @else
+            <div class="app-shell">
+                <aside class="sidebar-shell">
+                    <div class="sidebar-brand-block">
+                        <a class="brand-link" href="{{ auth()->check() ? route('dashboard') : route('login') }}">{{ config('app.name') }}</a>
+                        <span class="brand-subtitle">Operational dashboard for industrial project delivery</span>
+                    </div>
 
-        a:hover {
-            color: #1d4ed8;
-        }
+                    @auth
+                        <nav class="sidebar-nav">
+                            <a class="@if (request()->routeIs('dashboard')) is-active @endif" href="{{ route('dashboard') }}">
+                                <span class="sidebar-nav-icon" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24">
+                                        <path d="M4 13.5 12 5l8 8.5"></path>
+                                        <path d="M6.5 11.5V19h11v-7.5"></path>
+                                    </svg>
+                                </span>
+                                <span class="sidebar-nav-label">Dashboard</span>
+                            </a>
+                            <a class="@if (request()->routeIs('dashboard.tv1')) is-active @endif" href="{{ route('dashboard.tv1') }}">
+                                <span class="sidebar-nav-icon" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24">
+                                        <rect x="4" y="5" width="16" height="14" rx="3"></rect>
+                                        <path d="M8 10h8"></path>
+                                        <path d="M8 14h5"></path>
+                                    </svg>
+                                </span>
+                                <span class="sidebar-nav-label">Dashboard TV 1</span>
+                            </a>
+                            @if (auth()->user()->canAccess('process_view'))
+                                <a class="@if (request()->routeIs('my-tasks.*')) is-active @endif" href="{{ route('my-tasks.index') }}">
+                                    <span class="sidebar-nav-icon" aria-hidden="true">
+                                        <svg viewBox="0 0 24 24">
+                                            <path d="M8 6h11"></path>
+                                            <path d="M8 12h11"></path>
+                                            <path d="M8 18h11"></path>
+                                            <path d="m3.8 6 1 1 2-2"></path>
+                                            <path d="m3.8 12 1 1 2-2"></path>
+                                            <path d="m3.8 18 1 1 2-2"></path>
+                                        </svg>
+                                    </span>
+                                    <span class="sidebar-nav-label">Daftar Checklist</span>
+                                </a>
+                            @endif
+                            @if (auth()->user()->canAccess('project_create'))
+                                <a class="@if (request()->routeIs('projects.create')) is-active @endif" href="{{ route('projects.create') }}">
+                                    <span class="sidebar-nav-icon" aria-hidden="true">
+                                        <svg viewBox="0 0 24 24">
+                                            <path d="M12 5v14"></path>
+                                            <path d="M5 12h14"></path>
+                                            <rect x="4" y="4" width="16" height="16" rx="3"></rect>
+                                        </svg>
+                                    </span>
+                                    <span class="sidebar-nav-label">Project Baru</span>
+                                </a>
+                            @endif
+                            @if (auth()->user()->canManageMasterFlows())
+                                <a class="@if (request()->routeIs('master-flows.*')) is-active @endif" href="{{ route('master-flows.index') }}">
+                                    <span class="sidebar-nav-icon" aria-hidden="true">
+                                        <svg viewBox="0 0 24 24">
+                                            <rect x="4" y="5" width="16" height="4" rx="1.5"></rect>
+                                            <rect x="4" y="10" width="10" height="4" rx="1.5"></rect>
+                                            <rect x="4" y="15" width="13" height="4" rx="1.5"></rect>
+                                        </svg>
+                                    </span>
+                                    <span class="sidebar-nav-label">Master Flow</span>
+                                </a>
+                            @endif
+                            @if (auth()->user()->canManageRoles())
+                                <a class="@if (request()->routeIs('roles.*')) is-active @endif" href="{{ route('roles.index') }}">
+                                    <span class="sidebar-nav-icon" aria-hidden="true">
+                                        <svg viewBox="0 0 24 24">
+                                            <path d="M12 5.5 14 7l2.5-.4 1 2.3 2 1.5-1 2.3 1 2.3-2 1.5-1 2.3L14 17l-2 1.5L10 17l-2.5.4-1-2.3-2-1.5 1-2.3-1-2.3 2-1.5 1-2.3L10 7z"></path>
+                                            <circle cx="12" cy="12" r="2.5"></circle>
+                                        </svg>
+                                    </span>
+                                    <span class="sidebar-nav-label">Role Management</span>
+                                </a>
+                            @endif
+                            @if (auth()->user()->canManageUsers())
+                                <a class="@if (request()->routeIs('users.*')) is-active @endif" href="{{ route('users.index') }}">
+                                    <span class="sidebar-nav-icon" aria-hidden="true">
+                                        <svg viewBox="0 0 24 24">
+                                            <path d="M16.5 19.5v-1.2a3.8 3.8 0 0 0-3.8-3.8H8.8A3.8 3.8 0 0 0 5 18.3v1.2"></path>
+                                            <circle cx="10.8" cy="8.5" r="3"></circle>
+                                            <path d="M16.5 8.5a2.5 2.5 0 1 1 0 5"></path>
+                                        </svg>
+                                    </span>
+                                    <span class="sidebar-nav-label">User Management</span>
+                                </a>
+                            @endif
+                        </nav>
+                    @endauth
 
-        /* Utilities */
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 0 20px;
-        }
+                    <div class="sidebar-theme">
+                        <label class="theme-switcher-label" for="theme-switcher">Theme</label>
+                        <select id="theme-switcher" class="theme-select" data-theme-switcher>
+                            <option value="industrial-clean">Industrial Clean</option>
+                            <option value="dark-steel">Dark Steel</option>
+                            <option value="control-room">Control Room</option>
+                            <option value="green-schneider">Green Schneider</option>
+                        </select>
+                    </div>
 
-        .text-center {
-            text-align: center;
-        }
+                    @auth
+                        <div class="sidebar-user">
+                            <div class="user-badge">
+                                <strong>{{ auth()->user()->name }}</strong>
+                                <span>{{ strtoupper(auth()->user()->role) }}</span>
+                            </div>
+                            <form method="POST" action="{{ route('logout') }}">
+                                @csrf
+                                <button class="toolbar-button toolbar-button-small sidebar-logout" type="submit">Logout</button>
+                            </form>
+                        </div>
+                    @endauth
 
-        .mt-0 { margin-top: 0; }
-        .mt-5 { margin-top: 5px; }
-        .mt-10 { margin-top: 10px; }
-        .mt-15 { margin-top: 15px; }
-        .mt-20 { margin-top: 20px; }
+                    <div class="sidebar-footnote">
+                        <span>Industrial Clean Workspace</span>
+                        <small>Project control dashboard for operational delivery</small>
+                    </div>
+                </aside>
 
-        .mb-0 { margin-bottom: 0; }
-        .mb-5 { margin-bottom: 5px; }
-        .mb-10 { margin-bottom: 10px; }
-        .mb-15 { margin-bottom: 15px; }
-        .mb-20 { margin-bottom: 20px; }
+                <div class="app-main">
+                    <header class="page-topbar">
+                        <div class="page-topbar-copy">
+                            <strong>{{ config('app.name') }}</strong>
+                            <span>Industrial project tracking workspace</span>
+                        </div>
+                        @auth
+                            <div class="page-topbar-badge">{{ auth()->user()->name }}</div>
+                        @endauth
+                    </header>
 
-        /* Scrollbar Styling */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
+                    @if (session('status'))
+                        <div class="flash-message">{{ session('status') }}</div>
+                    @endif
 
-        ::-webkit-scrollbar-track {
-            background: #f1f1f1;
-        }
+                    @if ($errors->any())
+                        <div class="flash-message flash-message-error">
+                            {{ $errors->first() }}
+                        </div>
+                    @endif
 
-        ::-webkit-scrollbar-thumb {
-            background: #ccc;
-            border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: #999;
-        }
-    </style>
-
-    @stack('styles')
-</head>
-<body>
-    <div class="app-container">
-        @yield('content')
-    </div>
-
-    <!-- Scripts -->
-    @stack('scripts')
-</body>
+                    @yield('content')
+                </div>
+            </div>
+        @endif
+    </body>
 </html>

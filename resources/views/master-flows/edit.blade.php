@@ -90,7 +90,7 @@
                 <div class="flow-chart flow-chart-editor" data-layout-stage>
                     <svg class="flow-lines" viewBox="0 0 1200 760" preserveAspectRatio="none" data-layout-lines>
                         <defs>
-                            <marker id="editor-arrow" viewBox="0 0 12 12" markerWidth="8" markerHeight="8" refX="13.2" refY="6" orient="auto" markerUnits="userSpaceOnUse">
+                            <marker id="editor-arrow" viewBox="0 0 12 12" markerWidth="6" markerHeight="6" refX="10" refY="6" orient="auto" markerUnits="strokeWidth">
                                 <path d="M 0 0 L 12 6 L 0 12 z" fill="#445463"></path>
                             </marker>
                         </defs>
@@ -127,20 +127,20 @@
                     <div class="form-grid">
                         <div class="form-field">
                             <label>Posisi X</label>
-                            <input name="position_x" type="number" min="0" max="100" step="0.1" value="12" required>
+                            <input name="position_x" type="number" min="2" max="96" step="0.1" value="12" required>
                         </div>
                         <div class="form-field">
                             <label>Posisi Y</label>
-                            <input name="position_y" type="number" min="0" max="100" step="0.1" value="12" required>
+                            <input name="position_y" type="number" min="4" max="96" step="0.1" value="12" required>
                         </div>
                     </div>
                     <div class="form-field">
                         <label>Role Yang Boleh Update Proses Ini</label>
-                        <div class="role-permission-list">
+                        <div class="role-permission-grid">
                             @foreach ($roles as $role)
-                                <label class="role-permission-inline">
+                                <label class="role-permission-option">
                                     <input type="checkbox" name="allowed_role_codes[]" value="{{ $role->code }}">
-                                    <span class="role-permission-inline-copy">
+                                    <span class="role-permission-copy">
                                         <strong>{{ $role->name }}</strong>
                                         <small>{{ strtoupper($role->code) }}</small>
                                     </span>
@@ -184,16 +184,16 @@
                     <button class="toolbar-button" type="submit">Tambah Garis</button>
                 </form>
 
-                <div class="connection-list">
+                <div class="list-stack">
                     @foreach ($flow->connections as $connection)
-                        <div class="connection-row">
-                            <div class="connection-row-name">
+                        <div class="list-card">
+                            <div>
                                 <strong>{{ $connection->fromStep->name }} → {{ $connection->toStep->name }}</strong>
                             </div>
-                            <form method="POST" action="{{ route('master-flows.connections.destroy', [$flow, $connection]) }}" class="connection-row-action">
+                            <form method="POST" action="{{ route('master-flows.connections.destroy', [$flow, $connection]) }}">
                                 @csrf
                                 @method('DELETE')
-                                <button class="toolbar-button toolbar-button-danger toolbar-button-small" type="submit">Hapus Garis</button>
+                                <button class="toolbar-button toolbar-button-danger" type="submit">Hapus Garis</button>
                             </form>
                         </div>
                     @endforeach
@@ -231,20 +231,20 @@
                                 <div class="form-grid">
                                     <div class="form-field">
                                         <label>X</label>
-                                        <input name="position_x" type="number" min="0" max="100" step="0.1" value="{{ $step->position_x }}" required>
+                                        <input name="position_x" type="number" min="2" max="96" step="0.1" value="{{ $step->position_x }}" required>
                                     </div>
                                     <div class="form-field">
                                         <label>Y</label>
-                                        <input name="position_y" type="number" min="0" max="100" step="0.1" value="{{ $step->position_y }}" required>
+                                        <input name="position_y" type="number" min="4" max="96" step="0.1" value="{{ $step->position_y }}" required>
                                     </div>
                                 </div>
                                 <div class="form-field">
                                     <label>Role Yang Boleh Update Proses Ini</label>
-                                    <div class="role-permission-list">
+                                    <div class="role-permission-grid">
                                         @foreach ($roles as $role)
-                                            <label class="role-permission-inline">
+                                            <label class="role-permission-option">
                                                 <input type="checkbox" name="allowed_role_codes[]" value="{{ $role->code }}" @checked(in_array($role->code, $step->allowed_role_codes ?? [], true))>
-                                                <span class="role-permission-inline-copy">
+                                                <span class="role-permission-copy">
                                                     <strong>{{ $role->name }}</strong>
                                                     <small>{{ strtoupper($role->code) }}</small>
                                                 </span>

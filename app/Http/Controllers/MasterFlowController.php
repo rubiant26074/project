@@ -90,8 +90,8 @@ class MasterFlowController extends Controller
         $validated = $request->validate([
             'steps' => ['required', 'array'],
             'steps.*.id' => ['required', Rule::exists('master_flow_steps', 'id')->where(fn ($query) => $query->where('master_flow_id', $masterFlow->id))],
-            'steps.*.position_x' => ['required', 'numeric', 'min:0', 'max:100'],
-            'steps.*.position_y' => ['required', 'numeric', 'min:0', 'max:100'],
+            'steps.*.position_x' => ['required', 'numeric', 'min:2', 'max:96'],
+            'steps.*.position_y' => ['required', 'numeric', 'min:4', 'max:96'],
             'connections' => ['nullable', 'array'],
             'connections.*.id' => ['required', Rule::exists('master_flow_connections', 'id')->where(fn ($query) => $query->where('master_flow_id', $masterFlow->id))],
             'connections.*.start_x' => ['nullable', 'numeric', 'min:0', 'max:100'],
@@ -136,8 +136,8 @@ class MasterFlowController extends Controller
         $validated = $request->validate([
             'code' => ['required', 'alpha_dash', Rule::unique('master_flow_steps', 'code')->where(fn ($query) => $query->where('master_flow_id', $masterFlow->id))],
             'name' => ['required', 'string', 'max:255'],
-            'position_x' => ['required', 'numeric', 'min:0', 'max:100'],
-            'position_y' => ['required', 'numeric', 'min:0', 'max:100'],
+            'position_x' => ['required', 'numeric', 'min:2', 'max:96'],
+            'position_y' => ['required', 'numeric', 'min:4', 'max:96'],
             'sort_order' => ['required', 'integer', 'min:0'],
             'allowed_role_codes' => ['nullable', 'array'],
             'allowed_role_codes.*' => ['string', Rule::exists('roles', 'code')->where(fn ($query) => $query->where('is_active', true))],
@@ -160,8 +160,8 @@ class MasterFlowController extends Controller
         $validated = $request->validate([
             'code' => ['required', 'alpha_dash', Rule::unique('master_flow_steps', 'code')->where(fn ($query) => $query->where('master_flow_id', $masterFlow->id))->ignore($step->id)],
             'name' => ['required', 'string', 'max:255'],
-            'position_x' => ['required', 'numeric', 'min:0', 'max:100'],
-            'position_y' => ['required', 'numeric', 'min:0', 'max:100'],
+            'position_x' => ['required', 'numeric', 'min:2', 'max:96'],
+            'position_y' => ['required', 'numeric', 'min:4', 'max:96'],
             'sort_order' => ['required', 'integer', 'min:0'],
             'allowed_role_codes' => ['nullable', 'array'],
             'allowed_role_codes.*' => ['string', Rule::exists('roles', 'code')->where(fn ($query) => $query->where('is_active', true))],
