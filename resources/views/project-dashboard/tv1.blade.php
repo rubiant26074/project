@@ -5,6 +5,30 @@
         $donutOnTrack = $totalProjects > 0 ? round(($onTrackProjects / $totalProjects) * 100) : 0;
         $donutAtRisk = $totalProjects > 0 ? round(($atRiskProjects / $totalProjects) * 100) : 0;
         $donutDelay = max(0, 100 - $donutOnTrack - $donutAtRisk);
+
+        $plannedCurve = collect([6, 14, 24, 36, 48, 58, 68, 77, 85, 93, 100]);
+        $actualCurve = collect($stageProgress)->pluck('progress');
+        $curveWidth = 640;
+        $curveHeight = 180;
+        $curvePaddingX = 22;
+        $curvePaddingY = 16;
+
+        $curvePoint = function (int $index, int $value) use ($plannedCurve, $curveWidth, $curveHeight, $curvePaddingX, $curvePaddingY) {
+            $maxIndex = max(1, $plannedCurve->count() - 1);
+            $x = $curvePaddingX + (($index / $maxIndex) * ($curveWidth - ($curvePaddingX * 2)));
+            $y = $curveHeight - $curvePaddingY - (($value / 100) * ($curveHeight - ($curvePaddingY * 2)));
+
+            return [$x, $y];
+        };
+
+        $plannedPoints = $plannedCurve->map(fn (int $value, int $index) => $curvePoint($index, $value))->map(fn (array $point) => $point[0].','.$point[1])->implode(' ');
+        $actualPoints = $actualCurve->map(fn (int $value, int $index) => $curvePoint($index, $value))->map(fn (array $point) => $point[0].','.$point[1])->implode(' ');
+        $curvePointsFor = function ($stageProgress) use ($curvePoint) {
+            return collect($stageProgress)
+                ->map(fn (array $stage, int $index) => $curvePoint($index, (int) ($stage['progress'] ?? 0)))
+                ->map(fn (array $point) => $point[0].','.$point[1])
+                ->implode(' ');
+        };
     @endphp
 
     <main class="page tv-dashboard-page">
@@ -12,7 +36,8 @@
             <header class="tv-board-header">
                 <div>
                     <h1>{{ config('app.name') }}</h1>
-                    <p>ORDER TO DELIVERY DASHBOARD</p>
+                    <p>TV 50" EXECUTIVE DASHBOARD</p>
+                    <small>Monitor eksekutif untuk project manager &amp; management: progress, risiko, delivery, dan status kesiapan project.</small>
                 </div>
                 <div class="tv-header-meta">
                     <span>Last Update: {{ now()->format('d M Y H:i') }}</span>
@@ -38,6 +63,120 @@
                     </article>
                 </div>
             </header>
+
+            <section class="tv-exec-strip">
+                <article class="tv-kpi-card tv-kpi-blue">
+                    <span>Overall Progress</span>
+                    <strong>{{ $avgProgress }}%</strong>
+                    <small>Rata-rata progress aktif</small>
+                </article>
+                <article class="tv-kpi-card tv-kpi-green">
+                    <span>On Track</span>
+                    <strong>{{ $onTrackProjects }}</strong>
+                    <small>Project dalam jalur aman</small>
+                </article>
+                <article class="tv-kpi-card tv-kpi-orange">
+                    <span>At Risk</span>
+                    <strong>{{ $atRiskProjects }}</strong>
+                    <small>Perlu perhatian eksekutif</small>
+                </article>
+                <article class="tv-kpi-card tv-kpi-red">
+                    <span>Delay</span>
+                    <strong>{{ $delayProjects }}</strong>
+                    <small>Project yang tertinggal</small>
+                </article>
+                <article class="tv-kpi-card tv-kpi-neutral">
+                    <span>Delivery 30 Hari</span>
+                    <strong>{{ $upcomingProjects->count() }}</strong>
+                    <small>Project mendekati delivery</small>
+                </article>
+            </section>
+
+            <section class="tv-analytics-grid">
+                <article class="tv-panel tv-analytics-panel">
+                    <h2>BAR CHART — PROGRESS BY STAGE</h2>
+                    <div class="tv-bar-grid">
+                        @foreach ($stageProgress as $stage)
+                            <div class="tv-bar-row">
+                                <div class="tv-bar-label">
+                                    <strong>{{ $stage['short'] }}</strong>
+                                    <span>{{ $stage['progress'] }}%</span>
+                                </div>
+                                <div class="tv-bar-track"><i style="width: {{ max(4, $stage['progress']) }}%"></i></div>
+                            </div>
+                        @endforeach
+                    </div>
+                </article>
+
+                <article class="tv-panel tv-analytics-panel">
+                    <h2>DONUT CHART — STATUS DISTRIBUTION</h2>
+                    <div class="tv-donut-shell">
+                        <div class="tv-donut tv-donut-large" style="--on-track: {{ $donutOnTrack }}; --at-risk: {{ $donutAtRisk }}; --delay: {{ $donutDelay }};">
+                            <strong>{{ $totalProjects }}</strong>
+                            <span>PROJECT</span>
+                        </div>
+                        <ul class="tv-donut-list">
+                            <li><i class="legend-green"></i> On Track <b>{{ $onTrackProjects }} ({{ $donutOnTrack }}%)</b></li>
+                            <li><i class="legend-orange"></i> At Risk <b>{{ $atRiskProjects }} ({{ $donutAtRisk }}%)</b></li>
+                            <li><i class="legend-red"></i> Delay <b>{{ $delayProjects }} ({{ $donutDelay }}%)</b></li>
+                        </ul>
+                    </div>
+                </article>
+
+                <article class="tv-panel tv-analytics-panel">
+                    <div class="tv-scurve-header">
+                        <h2>S-CURVE — PROJECT ROTATION</h2>
+                        <span>Auto-slide every 3 seconds</span>
+                    </div>
+                    <div class="tv-scurve-shell tv-scurve-rotator" data-tv-scurve-rotator>
+                        @forelse ($projectStageProgress as $entry)
+                            @php
+                                $project = $entry['project'];
+                                $actualPoints = $curvePointsFor($entry['stageProgress']);
+                            @endphp
+                            <article class="tv-scurve-slide {{ $loop->first ? 'is-active' : '' }}" data-tv-scurve-slide>
+                                <header class="tv-scurve-slide-header">
+                                    <div>
+                                        <strong>{{ $project->wo_number }}</strong>
+                                        <p>{{ $project->project_name }}</p>
+                                        <small>{{ $project->client_name }}</small>
+                                    </div>
+                                    <div class="tv-scurve-chip-row">
+                                        <span class="tv-scurve-chip tv-scurve-chip-green">{{ $entry['avgProgress'] }}% progress</span>
+                                        <span class="tv-scurve-chip tv-scurve-chip-{{ $project->delivery_status }}">{{ $project->delivery_label }}</span>
+                                    </div>
+                                </header>
+                                <svg class="tv-scurve-chart" viewBox="0 0 {{ $curveWidth }} {{ $curveHeight }}" aria-label="S-curve progress chart for {{ $project->project_name }}">
+                                    <line x1="22" y1="164" x2="618" y2="164" class="tv-scurve-axis" />
+                                    <line x1="22" y1="20" x2="22" y2="164" class="tv-scurve-axis" />
+                                    <polyline points="{{ $plannedPoints }}" class="tv-scurve-planned" />
+                                    <polyline points="{{ $actualPoints }}" class="tv-scurve-actual" />
+                                    @foreach ($entry['stageProgress'] as $index => $stage)
+                                        @php [$x, $y] = $curvePoint($index, (int) ($stage['progress'] ?? 0)); @endphp
+                                        <circle cx="{{ $x }}" cy="{{ $y }}" r="4.2" class="tv-scurve-dot" />
+                                    @endforeach
+                                </svg>
+                                <div class="tv-scurve-stage-row">
+                                    @foreach ($entry['stageProgress'] as $stage)
+                                        <span class="tv-scurve-stage-pill">{{ $stage['short'] }} {{ $stage['progress'] }}%</span>
+                                    @endforeach
+                                </div>
+                            </article>
+                        @empty
+                            <article class="tv-scurve-slide is-active">
+                                <div class="tv-scurve-empty">Belum ada data project untuk ditampilkan.</div>
+                            </article>
+                        @endforelse
+                        @if ($projectStageProgress->count() > 1)
+                            <div class="tv-scurve-indicators" aria-label="Project S-curve selector">
+                                @foreach ($projectStageProgress as $index => $entry)
+                                    <button type="button" class="tv-scurve-indicator {{ $index === 0 ? 'is-active' : '' }}" data-tv-scurve-indicator="{{ $index }}" aria-label="Tampilkan project {{ $entry['project']->wo_number }}"></button>
+                                @endforeach
+                            </div>
+                        @endif
+                    </div>
+                </article>
+            </section>
 
             <section class="tv-stage-strip">
                 @foreach ($stageProgress as $index => $stage)

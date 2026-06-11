@@ -71,6 +71,63 @@ document.querySelectorAll('[data-tv-auto-scroll]').forEach((container) => {
     }, 80);
 });
 
+document.querySelectorAll('[data-tv-scurve-rotator]').forEach((rotator) => {
+    const slides = Array.from(rotator.querySelectorAll('[data-tv-scurve-slide]'));
+    const indicators = Array.from(rotator.querySelectorAll('[data-tv-scurve-indicator]'));
+
+    if (slides.length < 2) {
+        return;
+    }
+
+    let activeIndex = 0;
+    let intervalId = null;
+
+    const render = (index) => {
+        activeIndex = (index + slides.length) % slides.length;
+
+        slides.forEach((slide, slideIndex) => {
+            slide.classList.toggle('is-active', slideIndex === activeIndex);
+        });
+
+        indicators.forEach((indicator, indicatorIndex) => {
+            indicator.classList.toggle('is-active', indicatorIndex === activeIndex);
+        });
+    };
+
+    const startRotation = () => {
+        if (intervalId) {
+            window.clearInterval(intervalId);
+        }
+
+        intervalId = window.setInterval(() => {
+            render(activeIndex + 1);
+        }, 3000);
+    };
+
+    rotator.addEventListener('mouseenter', () => {
+        if (intervalId) {
+            window.clearInterval(intervalId);
+            intervalId = null;
+        }
+    });
+
+    rotator.addEventListener('mouseleave', () => {
+        startRotation();
+    });
+
+    indicators.forEach((indicator) => {
+        indicator.addEventListener('click', () => {
+            const nextIndex = Number(indicator.dataset.tvScurveIndicator ?? 0);
+
+            render(nextIndex);
+            startRotation();
+        });
+    });
+
+    render(0);
+    startRotation();
+});
+
 document.querySelectorAll('[data-tv-project-url]').forEach((row) => {
     const openProject = () => {
         const url = row.dataset.tvProjectUrl;

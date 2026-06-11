@@ -64,6 +64,24 @@ class ProjectDashboardController extends Controller
             ];
         });
 
+        $projectStageProgress = $projects->map(function (Project $project) use ($stageNames, $stageShortNames) {
+            $stageData = collect($stageNames)->map(function (string $stageName, int $index) use ($project, $stageShortNames) {
+                $process = $project->processes->sortBy('sort_order')->values()->get($index);
+
+                return [
+                    'name' => $stageName,
+                    'short' => $stageShortNames[$index] ?? Str::substr($stageName, 0, 4),
+                    'progress' => (int) round((float) ($process?->progress ?? 0)),
+                ];
+            });
+
+            return [
+                'project' => $project,
+                'stageProgress' => $stageData,
+                'avgProgress' => (int) round((float) $project->progress),
+            ];
+        })->values();
+
         $procurementProgress = $this->averageProcessProgress($projects, ['purchasing', 'procurement', 'material']);
         $poFollowUpProgress = $this->averageProcessProgress($projects, ['scc', 'po']);
 
@@ -114,6 +132,7 @@ class ProjectDashboardController extends Controller
             'projects' => $decoratedProjects,
             'overviewProjects' => $decoratedProjects,
             'stageProgress' => $stageProgress,
+            'projectStageProgress' => $projectStageProgress,
             'departmentCards' => $departmentCards,
             'riskProjects' => $decoratedProjects->whereIn('delivery_status', ['delay', 'at-risk'])->values(),
             'upcomingProjects' => $decoratedProjects
