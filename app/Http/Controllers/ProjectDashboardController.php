@@ -63,6 +63,10 @@ class ProjectDashboardController extends Controller
                 'progress' => $values->count() > 0 ? (int) round($values->avg()) : 0,
             ];
         });
+
+        $procurementProgress = $this->averageProcessProgress($projects, ['purchasing', 'procurement', 'material']);
+        $poFollowUpProgress = $this->averageProcessProgress($projects, ['scc', 'po']);
+
         $departmentCards = [
             [
                 'title' => 'ENGINEERING',
@@ -75,9 +79,9 @@ class ProjectDashboardController extends Controller
             [
                 'title' => 'PROCUREMENT',
                 'items' => [
-                    ['label' => 'Material Progress', 'progress' => $this->averageProcessProgress($projects, ['purchasing', 'procurement', 'material'])],
-                    ['label' => 'SCC / PO Follow Up', 'progress' => $this->averageProcessProgress($projects, ['scc', 'po'])],
-                    ['label' => 'Outstanding PO', 'progress' => max(0, 100 - $stageProgress->get(3)['progress'])],
+                    ['label' => 'Material Progress', 'progress' => $procurementProgress],
+                    ['label' => 'SCC / PO Follow Up', 'progress' => $poFollowUpProgress],
+                    ['label' => 'Outstanding PO', 'progress' => max(0, 100 - $procurementProgress)],
                 ],
             ],
             [

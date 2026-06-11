@@ -1529,18 +1529,46 @@ body[data-theme='control-room'] .checklist-item {
     justify-content: center;
     min-width: 74px;
     padding: 3px 8px;
-    border-radius: 4px;
+    border-radius: 6px;
     font-size: 0.68rem;
     font-weight: 950;
+    letter-spacing: 0.02em;
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, currentColor 18%, transparent);
 }
 
-.tv-status-on-track { color: var(--accent-dark); }
-.tv-status-at-risk { color: color-mix(in srgb, var(--proses-bg) 48%, #8a5200); }
-.tv-status-delay { color: color-mix(in srgb, var(--open-bg) 35%, #b13a58); }
+.tv-status-on-track {
+    color: #166534;
+    background: color-mix(in srgb, #22c55e 24%, var(--tv-panel-bg));
+    border: 1px solid color-mix(in srgb, #22c55e 46%, var(--tv-panel-line));
+}
+
+.tv-status-at-risk {
+    color: #9a5b00;
+    background: color-mix(in srgb, #f59e0b 30%, var(--tv-panel-bg));
+    border: 1px solid color-mix(in srgb, #f59e0b 46%, var(--tv-panel-line));
+}
+
+.tv-status-delay {
+    color: #991b1b;
+    background: color-mix(in srgb, #ef4444 28%, var(--tv-panel-bg));
+    border: 1px solid color-mix(in srgb, #ef4444 46%, var(--tv-panel-line));
+}
+
 .tv-impact-at-risk,
-.tv-impact-delay { color: var(--tv-panel-text); }
-.tv-impact-at-risk { background: color-mix(in srgb, var(--proses-bg) 72%, var(--tv-panel-bg)); }
-.tv-impact-delay { background: color-mix(in srgb, var(--open-bg) 72%, var(--tv-panel-bg)); }
+.tv-impact-delay {
+    color: var(--tv-panel-text);
+    border: 1px solid color-mix(in srgb, currentColor 18%, var(--tv-panel-line));
+}
+
+.tv-impact-at-risk {
+    color: #9a5b00;
+    background: color-mix(in srgb, #f59e0b 30%, var(--tv-panel-bg));
+}
+
+.tv-impact-delay {
+    color: #991b1b;
+    background: color-mix(in srgb, #ef4444 28%, var(--tv-panel-bg));
+}
 
 .tv-donut-row {
     display: grid;
