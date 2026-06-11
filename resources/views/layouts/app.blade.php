@@ -42,8 +42,8 @@
             <div class="app-shell">
                 <aside class="sidebar-shell">
                     <div class="sidebar-brand-block">
-                        <a class="brand-link" href="{{ auth()->check() ? route('dashboard') : route('login') }}">{{ config('app.name') }}</a>
-                        <span class="brand-subtitle">Operational dashboard for industrial project delivery</span>
+                        <a class="brand-link" href="{{ auth()->check() ? route('dashboard') : route('login') }}">BCP Project Tracker</a>
+                        <span class="brand-subtitle">Integrated Project Monitoring &amp; Reporting System</span>
                     </div>
 
                     @auth
@@ -55,7 +55,7 @@
                                         <path d="M6.5 11.5V19h11v-7.5"></path>
                                     </svg>
                                 </span>
-                                <span class="sidebar-nav-label">Dashboard</span>
+                                <span class="sidebar-nav-label">Home</span>
                             </a>
                             <a class="@if (request()->routeIs('dashboard.tv1')) is-active @endif" href="{{ route('dashboard.tv1') }}">
                                 <span class="sidebar-nav-icon" aria-hidden="true">
@@ -65,7 +65,7 @@
                                         <path d="M8 14h5"></path>
                                     </svg>
                                 </span>
-                                <span class="sidebar-nav-label">Dashboard TV 1</span>
+                                <span class="sidebar-nav-label">Dashboard</span>
                             </a>
                             @if (auth()->user()->canAccess('process_view'))
                                 <a class="@if (request()->routeIs('my-tasks.*')) is-active @endif" href="{{ route('my-tasks.index') }}">
@@ -164,8 +164,9 @@
                 <div class="app-main">
                     <header class="page-topbar">
                         <div class="page-topbar-copy">
-                            <strong>{{ config('app.name') }}</strong>
-                            <span>Industrial project tracking workspace</span>
+                            <strong>BCP Project Tracker</strong>
+                            <span>Integrated Project Monitoring &amp; Reporting System</span>
+                            <small>Version {{ config('app.version', 'v1.0.0') }}</small>
                         </div>
                         @auth
                             <div class="page-topbar-badge">{{ auth()->user()->name }}</div>
