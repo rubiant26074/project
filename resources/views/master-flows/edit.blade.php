@@ -265,18 +265,20 @@
                                 <h3>Template Checklist</h3>
                                 <div class="list-stack list-stack-compact">
                                     @foreach ($step->checklistTemplates as $template)
-                                        <form method="POST" action="{{ route('master-flows.steps.checklists.update', [$flow, $step, $template]) }}" class="list-card list-card-form">
-                                            @csrf
-                                            @method('PUT')
-                                            <input name="label" type="text" value="{{ $template->label }}" required>
-                                            <input name="sort_order" type="number" min="0" value="{{ $template->sort_order }}" required>
-                                            <button class="toolbar-button toolbar-button-small" type="submit">Update</button>
-                                        </form>
-                                        <form method="POST" action="{{ route('master-flows.steps.checklists.destroy', [$flow, $step, $template]) }}" class="toolbar-group toolbar-group-top">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button class="toolbar-button toolbar-button-danger toolbar-button-small" type="submit">Hapus</button>
-                                        </form>
+                                        <div class="checklist-template-row-shell">
+                                            <form method="POST" action="{{ route('master-flows.steps.checklists.update', [$flow, $step, $template]) }}" class="checklist-template-row">
+                                                @csrf
+                                                @method('PUT')
+                                                <input name="label" type="text" value="{{ $template->label }}" required>
+                                                <input name="sort_order" type="number" min="0" value="{{ $template->sort_order }}" required>
+                                                <button class="toolbar-button toolbar-button-small" type="submit">Update</button>
+                                            </form>
+                                            <form method="POST" action="{{ route('master-flows.steps.checklists.destroy', [$flow, $step, $template]) }}" class="checklist-template-action">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button class="toolbar-button toolbar-button-danger toolbar-button-small" type="submit">Hapus</button>
+                                            </form>
+                                        </div>
                                     @endforeach
                                 </div>
 

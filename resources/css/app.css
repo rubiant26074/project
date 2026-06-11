@@ -3205,6 +3205,63 @@ body[data-theme='control-room'] .admin-table textarea {
     align-items: center;
 }
 
+.checklist-template-row-shell {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px;
+    align-items: center;
+    padding: 4px 0;
+    border-bottom: 1px solid rgba(43, 57, 72, 0.08);
+    background: transparent !important;
+}
+
+.checklist-template-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 90px auto;
+    gap: 8px;
+    align-items: center;
+}
+
+.checklist-template-row input {
+    width: 100%;
+    min-height: 30px;
+    padding: 5px 7px;
+    border: 1px solid rgba(43, 57, 72, 0.12);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.92);
+    color: var(--ink);
+    font: inherit;
+}
+
+.checklist-template-action {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.subsection .list-stack-compact {
+    gap: 0;
+}
+
+.subsection .list-card,
+.subsection .list-card-form,
+.subsection .checklist-template-row-shell,
+.subsection .checklist-template-row,
+.subsection .checklist-template-action {
+    border: none !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+.subsection .list-card {
+    padding: 0;
+}
+
+.subsection .list-card-form {
+    display: contents;
+}
+
 .form-inline {
     display: grid;
     grid-template-columns: minmax(0, 1fr) 120px auto;
@@ -3616,15 +3673,46 @@ body[data-theme='control-room'] .admin-table textarea {
 
 .checklist-table-shell {
     overflow: auto;
-    border: 1px solid rgba(43, 57, 72, 0.16);
-    border-radius: 10px;
-    background: var(--panel);
+    border: none !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+.process-card-checklist .checklist-table-shell {
+    border: none !important;
+    background: transparent !important;
 }
 
 .checklist-table {
+    width: 100%;
     min-width: 0;
     table-layout: fixed;
     border-collapse: collapse;
+    border-spacing: 0;
+    background: transparent;
+}
+
+.process-card-checklist .checklist-table,
+.process-card-checklist .checklist-table tr,
+.process-card-checklist .checklist-table th,
+.process-card-checklist .checklist-table td {
+    border: none !important;
+    background: transparent !important;
+}
+
+.checklist-table thead th,
+.checklist-table tbody td,
+.checklist-table thead th *,
+.checklist-table tbody td * {
+    border: none !important;
+    border-bottom: 1px solid rgba(43, 57, 72, 0.08) !important;
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+.checklist-table tbody tr:last-child td {
+    border-bottom: none;
 }
 
 .process-card-checklist {
@@ -3634,36 +3722,59 @@ body[data-theme='control-room'] .admin-table textarea {
 
 .checklist-table td,
 .checklist-table th {
+    padding: 3px 5px !important;
     vertical-align: middle;
-    padding: 0;
-    border: 1px solid rgba(43, 57, 72, 0.12);
+    border: none !important;
+    border-bottom: 1px solid rgba(43, 57, 72, 0.08) !important;
+    background: transparent !important;
+    line-height: 1.15;
+}
+
+.process-card-checklist .checklist-table td,
+.process-card-checklist .checklist-table th {
+    padding-top: 2px !important;
+    padding-bottom: 2px !important;
 }
 
 .checklist-table th {
-    padding: 8px 10px;
-    background: color-mix(in srgb, var(--panel-muted) 84%, var(--panel));
+    padding: 6px 8px;
+    background: transparent;
     color: var(--muted);
-    font-size: 0.68rem;
+    font-size: 0.64rem;
+    font-weight: 800;
     letter-spacing: 0.08em;
+    text-transform: uppercase;
     white-space: nowrap;
 }
 
 .checklist-table td {
-    height: 34px;
-    background: color-mix(in srgb, var(--panel) 92%, var(--close-soft));
-    font-size: 0.84rem;
+    height: 30px;
+    background: transparent;
+    font-size: 0.82rem;
 }
 
 .checklist-table input[type='date'],
 .checklist-table input[type='text'] {
     width: 100%;
-    min-height: 34px;
-    padding: 6px 8px;
-    border: 0;
-    border-radius: 0;
-    background: transparent;
-    box-shadow: none;
-    font-size: 0.82rem;
+    min-height: 22px;
+    padding: 2px 4px !important;
+    border: none !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    font-size: 0.78rem;
+}
+
+.process-card-checklist .checklist-table input,
+.process-card-checklist .checklist-table select,
+.process-card-checklist .checklist-table textarea {
+    border: none !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    padding: 2px 4px !important;
+    min-height: 22px;
+    font-size: 0.78rem;
 }
 
 .checklist-table input[type='date']:focus,
@@ -3674,11 +3785,11 @@ body[data-theme='control-room'] .admin-table textarea {
 }
 
 .checklist-row-done td {
-    background: color-mix(in srgb, var(--close-soft) 34%, var(--panel));
+    background: color-mix(in srgb, var(--close-soft) 20%, transparent);
 }
 
 .checklist-row-pending td {
-    background: color-mix(in srgb, var(--panel) 90%, var(--open-soft));
+    background: color-mix(in srgb, var(--panel) 96%, transparent);
 }
 
 .checklist-status-cell {
@@ -3704,8 +3815,8 @@ body[data-theme='control-room'] .admin-table textarea {
     grid-template-columns: 22px minmax(0, 1fr);
     align-items: center;
     gap: 6px;
-    min-height: 34px;
-    padding: 0 10px;
+    min-height: 30px;
+    padding: 0 8px;
 }
 
 .checklist-tree-depth-1 {
@@ -3732,9 +3843,9 @@ body[data-theme='control-room'] .admin-table textarea {
     align-items: center;
     justify-content: center;
     padding: 0;
-    border: 1px solid rgba(43, 57, 72, 0.12);
+    border: 1px solid rgba(43, 57, 72, 0.10);
     border-radius: 6px;
-    background: rgba(255, 255, 255, 0.72);
+    background: rgba(255, 255, 255, 0.65);
     color: var(--muted);
     cursor: pointer;
 }

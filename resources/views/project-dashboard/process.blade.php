@@ -180,8 +180,8 @@
                     </form>
                 @endif
 
-                <div class="table-shell checklist-table-shell">
-                    <table class="admin-table checklist-table">
+                <div class="checklist-table-shell">
+                    <table class="checklist-table">
                         <colgroup>
                             <col style="width: 54px;">
                             <col style="width: 28%;">
