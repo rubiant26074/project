@@ -113,7 +113,7 @@ document.querySelectorAll('[data-checklist-field]').forEach((input) => {
 
         event.preventDefault();
 
-        const rows = Array.from(tbody.querySelectorAll('tr'));
+        const rows = Array.from(tbody.querySelectorAll('tr[data-checklist-row]'));
         const startRowIndex = rows.indexOf(currentRow);
         const fieldOrder = ['document_link', 'target_start', 'target_finish'];
         const startFieldIndex = Math.max(0, fieldOrder.indexOf(input.dataset.checklistField));
@@ -150,6 +150,82 @@ document.querySelectorAll('[data-checklist-field]').forEach((input) => {
         });
     });
 });
+
+const checklistRows = Array.from(document.querySelectorAll('[data-checklist-row]'));
+
+if (checklistRows.length > 0) {
+    const collapsedChecklistIds = new Set();
+    const checklistRowById = new Map(checklistRows.map((row) => [row.dataset.checklistId, row]));
+    const checklistToggleButtons = Array.from(document.querySelectorAll('[data-checklist-toggle]'));
+
+    checklistToggleButtons.forEach((button) => {
+        button.addEventListener('click', () => {
+            const checklistId = button.dataset.checklistToggle;
+
+            if (!checklistId) {
+                return;
+            }
+
+            if (collapsedChecklistIds.has(checklistId)) {
+                collapsedChecklistIds.delete(checklistId);
+                button.setAttribute('aria-expanded', 'true');
+            } else {
+                collapsedChecklistIds.add(checklistId);
+                button.setAttribute('aria-expanded', 'false');
+            }
+
+            syncChecklistTreeVisibility();
+        });
+    });
+
+    document.querySelectorAll('[data-checklist-add-child]').forEach((button) => {
+        button.addEventListener('click', () => {
+            const checklistId = button.dataset.checklistAddChild;
+            const formRow = document.querySelector(`[data-checklist-child-form="${checklistId}"]`);
+
+            if (!formRow) {
+                return;
+            }
+
+            formRow.hidden = !formRow.hidden;
+
+            if (!formRow.hidden) {
+                formRow.querySelector('input[name="label"]')?.focus();
+            }
+        });
+    });
+
+    syncChecklistTreeVisibility();
+
+    function syncChecklistTreeVisibility() {
+        checklistRows.forEach((row) => {
+            const isHidden = hasCollapsedAncestor(row);
+            row.hidden = isHidden;
+
+            if (isHidden) {
+                const formRow = document.querySelector(`[data-checklist-child-form="${row.dataset.checklistId}"]`);
+
+                if (formRow) {
+                    formRow.hidden = true;
+                }
+            }
+        });
+    }
+
+    function hasCollapsedAncestor(row) {
+        let parentId = row.dataset.checklistParentId;
+
+        while (parentId) {
+            if (collapsedChecklistIds.has(parentId)) {
+                return true;
+            }
+
+            parentId = checklistRowById.get(parentId)?.dataset.checklistParentId;
+        }
+
+        return false;
+    }
+}
 
 function normalizeSpreadsheetDate(value) {
     if (!value) {

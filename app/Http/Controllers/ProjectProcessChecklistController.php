@@ -41,10 +41,25 @@ class ProjectProcessChecklistController extends Controller
         $validated = $request->validate([
             'label' => ['required', 'string', 'max:255'],
             'sort_order' => ['required', 'integer', 'min:0'],
+            'parent_id' => ['nullable', 'integer'],
         ]);
 
+        $parent = null;
+        if (! empty($validated['parent_id'])) {
+            $parent = $process->checklists()->whereKey((int) $validated['parent_id'])->firstOrFail();
+
+            if ($parent->depth >= 2) {
+                return redirect()
+                    ->route('projects.processes.show', [$project, $process])
+                    ->withErrors(['parent_id' => 'Sub checklist maksimal sampai 3 hirarki.']);
+            }
+        }
+
         $checklist = $process->checklists()->create([
-            ...$validated,
+            'label' => $validated['label'],
+            'sort_order' => $validated['sort_order'],
+            'parent_id' => $parent?->id,
+            'depth' => $parent ? $parent->depth + 1 : 0,
             'document_link' => null,
             'is_done' => false,
         ]);

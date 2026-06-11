@@ -3652,6 +3652,11 @@ body[data-theme='control-room'] .admin-table textarea {
     vertical-align: middle;
 }
 
+.checklist-table th:first-child,
+.checklist-table td:first-child {
+    text-align: center;
+}
+
 .checklist-status-cell input[type='checkbox'] {
     display: block;
     width: 14px;
@@ -3659,11 +3664,67 @@ body[data-theme='control-room'] .admin-table textarea {
     margin: 0 auto;
 }
 
-.checklist-label-cell strong {
-    display: block;
-    padding: 7px 10px;
+.checklist-tree-label {
+    display: grid;
+    grid-template-columns: 22px minmax(0, 1fr);
+    align-items: center;
+    gap: 6px;
+    min-height: 34px;
+    padding: 0 10px;
+}
+
+.checklist-tree-depth-1 {
+    padding-left: 28px;
+}
+
+.checklist-tree-depth-2 {
+    padding-left: 50px;
+}
+
+.checklist-tree-label strong {
     line-height: 1.2;
     word-break: break-word;
+}
+
+.checklist-tree-toggle,
+.checklist-tree-spacer {
+    width: 22px;
+    height: 22px;
+}
+
+.checklist-tree-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 1px solid rgba(43, 57, 72, 0.12);
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.72);
+    color: var(--muted);
+    cursor: pointer;
+}
+
+.checklist-tree-toggle svg {
+    width: 16px;
+    height: 16px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transition: transform 150ms ease;
+}
+
+.checklist-tree-toggle[aria-expanded='false'] svg {
+    transform: rotate(-90deg);
+}
+
+.checklist-child-form-row td {
+    background: color-mix(in srgb, var(--panel-muted) 72%, var(--panel));
+}
+
+.checklist-create-sub-form {
+    margin: 0;
 }
 
 .checklist-link-cell {

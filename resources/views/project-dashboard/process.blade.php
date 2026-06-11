@@ -146,6 +146,28 @@
 
                         return $link;
                     };
+
+                    $checklistChildren = $process->checklists->groupBy('parent_id');
+                    $renderedChecklistIds = [];
+                    $visibleChecklists = collect();
+                    $appendChecklistBranch = function ($items, int $depth = 0) use (&$appendChecklistBranch, &$visibleChecklists, &$renderedChecklistIds, $checklistChildren): void {
+                        foreach ($items->sortBy([['sort_order', 'asc'], ['id', 'asc']]) as $item) {
+                            if (isset($renderedChecklistIds[$item->id])) {
+                                continue;
+                            }
+
+                            $item->tree_depth = min($depth, 2);
+                            $item->children_count = $checklistChildren->get($item->id, collect())->count();
+                            $visibleChecklists->push($item);
+                            $renderedChecklistIds[$item->id] = true;
+
+                            $appendChecklistBranch($checklistChildren->get($item->id, collect()), $depth + 1);
+                        }
+                    };
+
+                    $appendChecklistBranch($checklistChildren->get('', collect()));
+                    $appendChecklistBranch($checklistChildren->get(null, collect()));
+                    $appendChecklistBranch($process->checklists->filter(fn ($item) => ! isset($renderedChecklistIds[$item->id])));
                 @endphp
 
                 @if ($canUpdateThisProcess)
@@ -179,19 +201,38 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach ($process->checklists as $item)
+                            @foreach ($visibleChecklists as $item)
                                 @php
                                     $documentHref = $resolveDocumentHref($item->document_link);
                                     $deleteFormId = 'checklist-delete-' . $item->id;
+                                    $itemDepth = (int) ($item->tree_depth ?? $item->depth ?? 0);
+                                    $hasChildren = (int) ($item->children_count ?? 0) > 0;
                                 @endphp
-                                <tr class="{{ $item->is_done ? 'checklist-row-done' : 'checklist-row-pending' }}">
+                                <tr
+                                    class="{{ $item->is_done ? 'checklist-row-done' : 'checklist-row-pending' }}"
+                                    data-checklist-row
+                                    data-checklist-id="{{ $item->id }}"
+                                    data-checklist-parent-id="{{ $item->parent_id }}"
+                                    data-checklist-depth="{{ $itemDepth }}"
+                                >
                                     @if ($canUpdateThisProcess)
                                         <td class="checklist-status-cell">
                                             <input type="hidden" name="checklists[{{ $item->id }}][is_done]" value="0" form="checklist-bulk-update">
                                             <input type="checkbox" name="checklists[{{ $item->id }}][is_done]" value="1" form="checklist-bulk-update" @checked($item->is_done)>
                                         </td>
                                         <td class="checklist-label-cell">
-                                            <strong>{{ $item->label }}</strong>
+                                            <div class="checklist-tree-label checklist-tree-depth-{{ $itemDepth }}">
+                                                @if ($hasChildren)
+                                                    <button class="checklist-tree-toggle" type="button" data-checklist-toggle="{{ $item->id }}" aria-expanded="true" title="Buka/tutup sub checklist" aria-label="Buka/tutup sub checklist">
+                                                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                                                            <path d="m8 10 4 4 4-4"></path>
+                                                        </svg>
+                                                    </button>
+                                                @else
+                                                    <span class="checklist-tree-spacer"></span>
+                                                @endif
+                                                <strong>{{ $item->label }}</strong>
+                                            </div>
                                         </td>
                                         <td>
                                             <div class="checklist-link-cell">
@@ -222,6 +263,14 @@
                                         </td>
                                         <td>
                                             <div class="table-action-group">
+                                                @if ($itemDepth < 2)
+                                                    <button class="table-icon-button checklist-cell-action" type="button" data-checklist-add-child="{{ $item->id }}" title="Tambah sub checklist" aria-label="Tambah sub checklist">
+                                                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                                                            <path d="M12 5v14"></path>
+                                                            <path d="M5 12h14"></path>
+                                                        </svg>
+                                                    </button>
+                                                @endif
                                                 <button class="table-icon-button table-icon-button-danger checklist-cell-action" type="submit" form="{{ $deleteFormId }}" title="Hapus checklist" aria-label="Hapus checklist">
                                                     <svg viewBox="0 0 24 24" aria-hidden="true">
                                                         <path d="M3 6h18"></path>
@@ -237,7 +286,20 @@
                                         <td class="checklist-status-cell">
                                             <input type="checkbox" @checked($item->is_done) disabled>
                                         </td>
-                                        <td class="checklist-label-cell"><strong>{{ $item->label }}</strong></td>
+                                        <td class="checklist-label-cell">
+                                            <div class="checklist-tree-label checklist-tree-depth-{{ $itemDepth }}">
+                                                @if ($hasChildren)
+                                                    <button class="checklist-tree-toggle" type="button" data-checklist-toggle="{{ $item->id }}" aria-expanded="true" title="Buka/tutup sub checklist" aria-label="Buka/tutup sub checklist">
+                                                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                                                            <path d="m8 10 4 4 4-4"></path>
+                                                        </svg>
+                                                    </button>
+                                                @else
+                                                    <span class="checklist-tree-spacer"></span>
+                                                @endif
+                                                <strong>{{ $item->label }}</strong>
+                                            </div>
+                                        </td>
                                         <td>
                                                 @if ($item->document_link && $documentHref)
                                                     <a class="table-icon-button table-icon-button-link" href="{{ $documentHref }}" target="_blank" rel="noopener noreferrer" title="Buka link dokumen" aria-label="Buka link dokumen">
@@ -256,13 +318,27 @@
                                             <td><span class="inline-meta">Lihat saja</span></td>
                                     @endif
                                 </tr>
+                                @if ($canUpdateThisProcess && $itemDepth < 2)
+                                    <tr class="checklist-child-form-row" data-checklist-child-form="{{ $item->id }}" hidden>
+                                        <td></td>
+                                        <td colspan="5">
+                                            <form method="POST" action="{{ route('projects.processes.checklists.store', [$project, $process]) }}" class="form-inline checklist-create-form checklist-create-sub-form">
+                                                @csrf
+                                                <input type="hidden" name="parent_id" value="{{ $item->id }}">
+                                                <input name="label" type="text" placeholder="Tambah sub checklist untuk {{ $item->label }}" required>
+                                                <input name="sort_order" type="number" min="0" value="{{ $item->children_count + 1 }}" required>
+                                                <button class="toolbar-button toolbar-button-primary toolbar-button-small" type="submit">Tambah</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                @endif
                             @endforeach
                         </tbody>
                     </table>
                 </div>
 
                 @if ($canUpdateThisProcess)
-                    @foreach ($process->checklists as $item)
+                    @foreach ($visibleChecklists as $item)
                         <form id="checklist-delete-{{ $item->id }}" method="POST" action="{{ route('projects.processes.checklists.destroy', [$project, $process, $item]) }}">
                             @csrf
                             @method('DELETE')
