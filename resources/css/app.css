@@ -2420,7 +2420,7 @@ body[data-theme='control-room'] .flow-line {
 
 .flow-node-project .flow-node-body {
     gap: 4px;
-    padding-right: 36px;
+    padding-right: 8px;
 }
 
 .flow-node-project strong {
@@ -2633,8 +2633,15 @@ body[data-theme='control-room'] #arrow path {
 .flow-node-status-dot {
     width: 17.5px;
     height: 17.5px;
-    border-radius: 50%;
-    display: inline-block;
+    min-width: 17.5px;
+    min-height: 17.5px;
+    border-radius: 9999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    box-sizing: border-box;
+    overflow: hidden;
     box-shadow: 0 0 14px rgba(0, 0, 0, 0.18), inset 0 0 0 1px rgba(255, 255, 255, 0.22);
 }
 
@@ -2720,7 +2727,7 @@ body[data-theme='control-room'] #arrow path {
 
 .flow-node-footer {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-columns: 1fr;
     align-items: center;
     gap: 8px;
 }

@@ -2,12 +2,6 @@
 
 @section('content')
     @php
-        $statusIcons = [
-            'close' => '<svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="29"></circle><rect x="18" y="18" width="24" height="28" rx="4"></rect><path d="M24 33l6 6 12-14"></path></svg>',
-            'proses' => '<svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="29"></circle><path d="M28 13h8l1 5a17 17 0 0 1 5 2l4-3 6 6-3 4a17 17 0 0 1 2 5l5 1v8l-5 1a17 17 0 0 1-2 5l3 4-6 6-4-3a17 17 0 0 1-5 2l-1 5h-8l-1-5a17 17 0 0 1-5-2l-4 3-6-6 3-4a17 17 0 0 1-2-5l-5-1v-8l5-1a17 17 0 0 1 2-5l-3-4 6-6 4 3a17 17 0 0 1 5-2z"></path><circle cx="32" cy="37" r="7"></circle><path d="M46 39h3l1 3 3 1v3l-3 1-1 3h-3l-1-3-3-1v-3l3-1z"></path><circle cx="47.5" cy="44.5" r="2.5"></circle></svg>',
-            'open' => '<svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="29"></circle><path d="M22 22l20 20"></path><path d="M42 22L22 42"></path></svg>',
-        ];
-
         $nodeWidth = 160;
         $nodeHeight = 88;
         $halfNodeWidth = $nodeWidth / 2;
@@ -257,7 +251,6 @@
                                     - {{ $process->target_finish->format('d M Y') }}
                                 @endif
                             </small>
-                            <span class="flow-node-status-icon flow-node-status-icon-{{ $process->status }}">{!! $statusIcons[$process->status] ?? $statusIcons['open'] !!}</span>
                         </div>
                     </a>
                 @endforeach
