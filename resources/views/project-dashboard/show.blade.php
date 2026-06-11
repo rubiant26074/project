@@ -244,7 +244,10 @@
                     >
                         <span class="flow-node-badge">{{ $process->progress }}%</span>
                         <div class="flow-node-body">
-                            <strong>{{ $process->name }}</strong>
+                            <div class="flow-node-title">
+                                <span class="flow-node-status-dot flow-node-status-dot-{{ $process->status }}" aria-hidden="true"></span>
+                                <strong>{{ $process->name }}</strong>
+                            </div>
                             <small class="flow-node-meta">{{ $process->completed_checklists }}/{{ $process->total_checklists }} checklist</small>
                         </div>
                         <div class="flow-node-footer">

@@ -1,4 +1,4 @@
-﻿@import 'tailwindcss';
+@import 'tailwindcss';
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
@@ -232,14 +232,14 @@ body[data-theme='control-room'] .sidebar-shell {
     gap: 12px;
     min-height: 46px;
     padding: 0 14px;
-    border: 1px solid rgba(0, 149, 48, 0.12);
-    border-radius: 14px;
-    background: rgba(255, 255, 255, 0.58);
+    background: transparent;
+    border: none;
+    border-radius: 0;
     font-weight: 700;
     color: var(--muted);
-    transition: all 150ms ease;
+    transition: color 150ms ease, background-color 150ms ease;
     position: relative;
-    overflow: hidden;
+    overflow: visible;
     --nav-icon-start: #38bdf8;
     --nav-icon-end: #2563eb;
     --nav-icon-glow: rgba(37, 99, 235, 0.22);
@@ -247,18 +247,17 @@ body[data-theme='control-room'] .sidebar-shell {
 
 .sidebar-nav a:hover,
 .sidebar-nav a.is-active {
-    border-color: rgba(0, 149, 48, 0.24);
-    background: linear-gradient(180deg, #f5fbf5 0%, #ebf7ee 100%);
+    background: rgba(0, 0, 0, 0.03);
     color: var(--accent-dark);
 }
 
 .sidebar-nav a:hover {
-    transform: translateX(2px);
+    transform: none;
 }
 
 .sidebar-nav a.is-active {
-    box-shadow: 0 12px 22px rgba(0, 149, 48, 0.14);
-    transform: translateX(3px);
+    box-shadow: none;
+    transform: none;
 }
 
 .sidebar-nav a.is-active::before {
@@ -273,19 +272,17 @@ body[data-theme='control-room'] .sidebar-shell {
 }
 
 .sidebar-nav-icon {
-    width: 36px;
-    height: 36px;
+    width: 34px;
+    height: 34px;
     display: inline-grid;
     place-items: center;
-    border-radius: 12px;
-    background:
-        radial-gradient(circle at 28% 22%, rgba(255, 255, 255, 0.55) 0 12%, transparent 32%),
-        linear-gradient(135deg, var(--nav-icon-start) 0%, var(--nav-icon-end) 100%);
-    border: 1px solid rgba(255, 255, 255, 0.64);
-    box-shadow: 0 10px 20px var(--nav-icon-glow), inset 0 1px 0 rgba(255, 255, 255, 0.36);
-    color: #ffffff;
+    border-radius: 0;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    color: var(--nav-icon-start);
     flex-shrink: 0;
-    transition: transform 150ms ease, box-shadow 150ms ease, filter 150ms ease;
+    transition: filter 150ms ease, color 150ms ease;
 }
 
 .sidebar-nav a:nth-child(1) {
@@ -332,14 +329,14 @@ body[data-theme='control-room'] .sidebar-shell {
 
 .sidebar-nav a:hover .sidebar-nav-icon,
 .sidebar-nav a.is-active .sidebar-nav-icon {
-    transform: scale(1.08) rotate(-3deg);
+    transform: none;
     filter: saturate(1.16);
-    box-shadow: 0 14px 26px var(--nav-icon-glow), inset 0 1px 0 rgba(255, 255, 255, 0.42);
+    box-shadow: none;
 }
 
 .sidebar-nav-icon svg {
-    width: 18px;
-    height: 18px;
+    width: 28px;
+    height: 28px;
     fill: none;
     stroke: currentColor;
     stroke-width: 1.9;
@@ -463,7 +460,34 @@ body[data-theme='dark-steel'] .theme-select,
 body[data-theme='control-room'] .theme-select {
     border-color: rgba(255, 255, 255, 0.1);
     background: rgba(255, 255, 255, 0.05);
-    color: var(--ink);
+    color: #000 !important;
+}
+
+body[data-theme='dark-steel'] .theme-select option,
+body[data-theme='control-room'] .theme-select option {
+    color: #000 !important;
+    background: #ffffff !important;
+}
+
+body[data-theme='dark-steel'] .tv-stage-card strong,
+body[data-theme='dark-steel'] .tv-stage-card small,
+body[data-theme='dark-steel'] .tv1-flow-card-header strong,
+body[data-theme='dark-steel'] .tv1-flow-card-header span,
+body[data-theme='dark-steel'] .flow-node strong,
+body[data-theme='dark-steel'] .flow-node small,
+body[data-theme='dark-steel'] .flow-node-meta,
+body[data-theme='dark-steel'] .flow-node-target,
+body[data-theme='dark-steel'] .flow-node-footer,
+body[data-theme='control-room'] .tv-stage-card strong,
+body[data-theme='control-room'] .tv-stage-card small,
+body[data-theme='control-room'] .tv1-flow-card-header strong,
+body[data-theme='control-room'] .tv1-flow-card-header span,
+body[data-theme='control-room'] .flow-node strong,
+body[data-theme='control-room'] .flow-node small,
+body[data-theme='control-room'] .flow-node-meta,
+body[data-theme='control-room'] .flow-node-target,
+body[data-theme='control-room'] .flow-node-footer {
+    color: #000 !important;
 }
 
 body[data-theme='dark-steel'] .user-badge,
@@ -1823,7 +1847,7 @@ body[data-theme='control-room'] .checklist-item {
 }
 
 .tv-project-step:not(:last-child)::after {
-    content: "â€º";
+    content: "›";
     position: absolute;
     top: 21px;
     right: -10px;
@@ -2551,7 +2575,7 @@ body[data-theme='control-room'] .flow-line {
 }
 
 .flow-connector-handle-middle2 {
-    border-color: var(--accent);
+    border-color: #3b82f6;
 }
 
 .flow-connector-handle-middle2::after {
@@ -2598,6 +2622,69 @@ body[data-theme='control-room'] #arrow path {
     gap: 6px;
     padding-right: 40px;
     align-content: start;
+}
+
+.flow-node-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.flow-node-status-dot {
+    width: 17.5px;
+    height: 17.5px;
+    border-radius: 50%;
+    display: inline-block;
+    box-shadow: 0 0 14px rgba(0, 0, 0, 0.18), inset 0 0 0 1px rgba(255, 255, 255, 0.22);
+}
+
+.flow-node-status-dot-closed,
+.flow-node-status-dot-close {
+    background: #39ff14;
+    box-shadow: 0 0 20px rgba(57, 255, 20, 0.85), inset 0 0 6px rgba(255, 255, 255, 0.85);
+}
+
+.flow-node-status-dot-proses,
+.flow-node-status-dot-processing {
+    background: #ff1a1a;
+    box-shadow: 0 0 26px rgba(255, 26, 26, 1), inset 0 0 8px rgba(255, 255, 255, 0.95);
+    /* blink on/off: switch between bright red and dim/off state */
+    animation: flow-dot-blink-onoff 1s steps(2, start) infinite;
+}
+
+.flow-node-status-dot-off {
+    /* generic off state: light gray */
+    background: #d1d1d1;
+    box-shadow: 0 0 6px rgba(0,0,0,0.06), inset 0 0 2px rgba(255,255,255,0.6);
+}
+
+.flow-node-status-dot-open,
+.flow-node-status-dot-opened {
+    background: #7d7d7d;
+}
+
+@keyframes flow-dot-blink {
+    0%, 50% { opacity: 0.18; }
+    51%, 100% { opacity: 1; }
+}
+
+@keyframes flow-dot-pulse {
+    0% { box-shadow: 0 0 20px rgba(255, 26, 26, 0.9), inset 0 0 6px rgba(255,255,255,0.9); }
+    50% { box-shadow: 0 0 34px rgba(255, 26, 26, 1), inset 0 0 8px rgba(255,255,255,1); }
+    100% { box-shadow: 0 0 20px rgba(255, 26, 26, 0.9), inset 0 0 6px rgba(255,255,255,0.9); }
+}
+
+@keyframes flow-dot-blink-onoff {
+    0%, 49% {
+        background: #ff1a1a;
+        box-shadow: 0 0 28px rgba(255,26,26,1), inset 0 0 8px rgba(255,255,255,1);
+        opacity: 1;
+    }
+    50%, 100% {
+        background: #d6d6d6; /* dim/off color */
+        box-shadow: 0 0 6px rgba(0,0,0,0.06), inset 0 0 2px rgba(255,255,255,0.6);
+        opacity: 0.9;
+    }
 }
 
 .flow-node strong {
@@ -3562,12 +3649,14 @@ body[data-theme='control-room'] .admin-table textarea {
 .checklist-status-cell {
     width: 54px;
     text-align: center;
+    vertical-align: middle;
 }
 
 .checklist-status-cell input[type='checkbox'] {
+    display: block;
     width: 14px;
     height: 14px;
-    margin: 0;
+    margin: 0 auto;
 }
 
 .checklist-label-cell strong {
