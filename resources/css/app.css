@@ -2377,9 +2377,10 @@ body[data-theme='control-room'] .checklist-item {
 
 .tv-project-step:hover .tv-project-step-icon,
 .tv-project-step:focus .tv-project-step-icon {
-    border-color: var(--accent-dark);
-    color: var(--accent-dark);
-    box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent-dark) 14%, transparent);
+    border-color: transparent;
+    background: transparent;
+    color: inherit;
+    box-shadow: none;
 }
 
 .tv-project-step:focus {
@@ -2399,15 +2400,18 @@ body[data-theme='control-room'] .checklist-item {
 .tv-project-step-icon {
     display: grid;
     place-items: center;
-    width: 46px;
-    height: 46px;
-    overflow: hidden;
-    padding: 2px;
-    border: 1.5px solid rgba(255, 255, 255, 0.9);
-    border-radius: 50%;
-    background: linear-gradient(135deg, #0f172a 0%, #17263a 100%);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 10px 16px rgba(15, 23, 42, 0.25);
-    color: var(--accent-cool);
+    width: auto;
+    height: auto;
+    overflow: visible;
+    padding: 0;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    color: inherit;
+    transition: none;
+    -webkit-mask-image: none;
+    mask-image: none;
 }
 
 .tv-project-step-icon svg {
@@ -2421,16 +2425,22 @@ body[data-theme='control-room'] .checklist-item {
 }
 
 .tv-project-step-icon-image {
-    width: 100%;
-    height: 100%;
+    display: block;
+    width: 42px;
+    height: 42px;
+    margin: 0;
+    padding: 0;
     object-fit: contain;
     object-position: center;
-    display: block;
-    padding: 2px;
-    margin: 0;
-    border-radius: 50%;
-    background: transparent;
-    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.35));
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    filter: none !important;
+    -webkit-filter: none !important;
+    mix-blend-mode: normal;
+    image-rendering: auto;
+    shape-rendering: geometricPrecision;
 }
 
 .tv-project-step.is-current {
@@ -2440,9 +2450,10 @@ body[data-theme='control-room'] .checklist-item {
 }
 
 .tv-project-step.is-current .tv-project-step-icon {
-    border-color: color-mix(in srgb, var(--proses-bg) 62%, #8a5200);
-    color: color-mix(in srgb, var(--proses-bg) 52%, #8a5200);
-    box-shadow: 0 0 0 4px color-mix(in srgb, var(--proses-bg) 24%, transparent);
+    border-color: transparent;
+    background: transparent;
+    color: inherit;
+    box-shadow: none;
 }
 
 .tv-project-step-done em { color: var(--accent-dark); }
@@ -2476,12 +2487,12 @@ body[data-theme='control-room'] .checklist-item {
 .tv-project-step::before {
     content: "";
     align-self: end;
-    width: 88%;
-    height: 3px;
+    width: 86%;
+    height: 2px;
     order: 10;
     margin-top: 4px;
     border-radius: 999px;
-    background: color-mix(in srgb, var(--line) 28%, transparent);
+    background: color-mix(in srgb, var(--line) 24%, transparent);
 }
 
 .tv-project-step-done::before {

@@ -2,10 +2,9 @@ const body = document.body;
 const storageKey = 'project-control-theme';
 const supportedThemes = ['industrial-clean', 'dark-steel', 'control-room', 'green-schneider'];
 const themeSwitcher = document.querySelector('[data-theme-switcher]');
-const initialTheme = supportedThemes.includes(localStorage.getItem(storageKey))
-    ? localStorage.getItem(storageKey)
-    : body.dataset.theme;
+const initialTheme = 'industrial-clean';
 
+localStorage.setItem(storageKey, initialTheme);
 setTheme(initialTheme);
 
 if (themeSwitcher) {
