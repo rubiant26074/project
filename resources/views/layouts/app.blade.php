@@ -65,7 +65,7 @@
                                         <path d="M8 14h5"></path>
                                     </svg>
                                 </span>
-                                <span class="sidebar-nav-label">Dashboard TV 50"</span>
+                                <span class="sidebar-nav-label">Dashboard</span>
                             </a>
                             @if (auth()->user()->canAccess('process_view'))
                                 <a class="@if (request()->routeIs('my-tasks.*')) is-active @endif" href="{{ route('my-tasks.index') }}">
