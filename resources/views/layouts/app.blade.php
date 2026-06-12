@@ -163,14 +163,25 @@
 
                 <div class="app-main">
                     <header class="page-topbar">
-                        <div class="page-topbar-copy">
-                            <strong>BCP Project Tracker</strong>
-                            <span>Integrated Project Monitoring &amp; Reporting System</span>
-                            <small>Version {{ config('app.version', 'v1.0.0') }}</small>
+                        <div class="page-topbar-topline">
+                            <div class="page-topbar-copy">
+                                <strong>BCP Project Tracker</strong>
+                                <span>Integrated Project Monitoring &amp; Reporting System</span>
+                                <small>Version {{ config('app.version', 'v1.0.0') }}</small>
+                            </div>
+                            <div class="page-topbar-actions">
+                                @auth
+                                    <div class="page-topbar-badge">{{ auth()->user()->name }}</div>
+                                @endauth
+                            </div>
                         </div>
-                        @auth
-                            <div class="page-topbar-badge">{{ auth()->user()->name }}</div>
-                        @endauth
+
+                        <div class="page-topbar-marquee" aria-label="Informasi penting">
+                            <div class="tv-header-marquee-track">
+                                <span>5T - TERENCANA - TERUKUR - TERARAH - TERCAPAI - TERSENYUM</span>
+                                <span aria-hidden="true">5T - TERENCANA - TERUKUR - TERARAH - TERCAPAI - TERSENYUM</span>
+                            </div>
+                        </div>
                     </header>
 
                     @if (session('status'))
