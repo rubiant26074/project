@@ -3,18 +3,21 @@
 @section('content')
     <main class="page">
         <section class="hero-banner">
-            <div>
+            <div class="hero-banner-copy">
                 <p class="eyebrow">Control Project Manager</p>
                 <h1>Status Semua Proyek</h1>
                 <p class="hero-copy">Pantau seluruh project dalam bentuk kartu kanban. Klik salah satu kartu untuk membuka flow proses per project.</p>
             </div>
-            <div class="hero-actions">
-                @if (auth()->user()->canAccess('project_create'))
-                    <a class="toolbar-button toolbar-button-primary" href="{{ route('projects.create') }}">Tambah Project</a>
-                @endif
-                @if (auth()->user()->canManageMasterFlows())
-                    <a class="toolbar-button" href="{{ route('master-flows.index') }}">Atur Master Flow</a>
-                @endif
+
+            <div class="hero-banner-side">
+                <div class="hero-actions">
+                    @if (auth()->user()->canAccess('project_create'))
+                        <a class="toolbar-button toolbar-button-primary" href="{{ route('projects.create') }}">Tambah Project</a>
+                    @endif
+                    @if (auth()->user()->canManageMasterFlows())
+                        <a class="toolbar-button" href="{{ route('master-flows.index') }}">Atur Master Flow</a>
+                    @endif
+                </div>
             </div>
         </section>
 
