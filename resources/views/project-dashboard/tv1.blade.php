@@ -37,7 +37,7 @@
                 <div>
                     <h1>{{ config('app.name') }}</h1>
                     <p>TV 50" EXECUTIVE DASHBOARD</p>
-                    <small>Monitor eksekutif untuk project manager &amp; management: progress, risiko, delivery, dan status kesiapan project.</small>
+                    <small>Management progress, risiko, delivery, dan status kesiapan project.</small>
                 </div>
                 <div class="tv-header-meta">
                     <span>Last Update: {{ now()->format('d M Y H:i') }}</span>

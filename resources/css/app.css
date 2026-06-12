@@ -1492,22 +1492,18 @@ body[data-theme='control-room'] .checklist-item {
     gap: 10px;
     opacity: 0;
     pointer-events: none;
-    transform: translateY(10px);
-    transition: opacity 420ms cubic-bezier(.22, 1, .36, 1), transform 420ms cubic-bezier(.22, 1, .36, 1);
-    will-change: opacity, transform;
+    transform: none;
+    transition: opacity 1000ms cubic-bezier(.22, 1, .36, 1);
+    will-change: opacity;
+    z-index: 1;
 }
 
 .tv-scurve-slide.is-active {
     position: relative;
     opacity: 1;
     pointer-events: auto;
-    transform: translateY(0);
-    animation: tv-scurve-fade 420ms cubic-bezier(.22, 1, .36, 1) both;
-}
-
-@keyframes tv-scurve-fade {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+    transform: none;
+    z-index: 2;
 }
 
 .tv-scurve-slide-header {

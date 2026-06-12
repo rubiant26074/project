@@ -82,16 +82,31 @@ document.querySelectorAll('[data-tv-scurve-rotator]').forEach((rotator) => {
     let activeIndex = 0;
     let intervalId = null;
 
-    const render = (index) => {
-        activeIndex = (index + slides.length) % slides.length;
-
-        slides.forEach((slide, slideIndex) => {
-            slide.classList.toggle('is-active', slideIndex === activeIndex);
-        });
-
+    const updateIndicators = (index) => {
         indicators.forEach((indicator, indicatorIndex) => {
-            indicator.classList.toggle('is-active', indicatorIndex === activeIndex);
+            indicator.classList.toggle('is-active', indicatorIndex === index);
         });
+    };
+
+    const render = (index) => {
+        const nextIndex = (index + slides.length) % slides.length;
+
+        if (nextIndex === activeIndex) {
+            return;
+        }
+
+        const currentSlide = slides[activeIndex];
+        const nextSlide = slides[nextIndex];
+
+        if (!currentSlide || !nextSlide) {
+            return;
+        }
+
+        currentSlide.classList.remove('is-active');
+        nextSlide.classList.add('is-active');
+
+        activeIndex = nextIndex;
+        updateIndicators(activeIndex);
     };
 
     const startRotation = () => {
@@ -101,7 +116,7 @@ document.querySelectorAll('[data-tv-scurve-rotator]').forEach((rotator) => {
 
         intervalId = window.setInterval(() => {
             render(activeIndex + 1);
-        }, 3000);
+        }, 5000);
     };
 
     rotator.addEventListener('mouseenter', () => {
@@ -124,7 +139,8 @@ document.querySelectorAll('[data-tv-scurve-rotator]').forEach((rotator) => {
         });
     });
 
-    render(0);
+    updateIndicators(0);
+    slides[0]?.classList.add('is-active');
     startRotation();
 });
 
