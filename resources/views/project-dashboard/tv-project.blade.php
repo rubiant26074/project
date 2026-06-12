@@ -5,6 +5,17 @@
         $statusLabel = ['open' => 'Open', 'proses' => 'In Progress', 'close' => 'Completed'];
         $statusClass = ['open' => 'pending', 'proses' => 'progress', 'close' => 'done'];
         $varianceClass = $scheduleVariance >= 0 ? 'positive' : 'negative';
+
+        $iconDirectory = public_path('icon');
+        $iconFiles = is_dir($iconDirectory)
+            ? array_values(array_filter(scandir($iconDirectory), static fn ($file) => is_file($iconDirectory . DIRECTORY_SEPARATOR . $file) && preg_match('/\.(png|jpg|jpeg|svg)$/i', $file)))
+            : [];
+
+        $iconLookup = [];
+        foreach ($iconFiles as $file) {
+            $slug = strtolower(preg_replace('/[^a-z0-9]+/i', '', pathinfo($file, PATHINFO_FILENAME)));
+            $iconLookup[$slug] = $file;
+        }
     @endphp
 
     <main class="tv-project-page">
@@ -62,26 +73,33 @@
                             href="{{ route('projects.processes.show', [$project, $process]) }}"
                             @if ($loopIndex === 1) tabindex="-1" @endif
                         >
+                            @php
+                                $processSlug = strtolower(preg_replace('/[^a-z0-9]+/i', '', $process->name));
+                                $processName = strtolower($process->name);
+
+                                $mappedIcon = match (true) {
+                                    str_contains($processName, 'packing') || str_contains($processName, 'shipment') => 'PACKING - SHIPMEN.PNG',
+                                    str_contains($processName, 'purchasing') => 'PRUSCHASING - BINA.png',
+                                    str_contains($processName, 'kom') && str_contains($processName, 'internal') => 'KOM INTERNAL.PNG',
+                                    default => $iconLookup[$processSlug] ?? null,
+                                };
+
+                                if (!$mappedIcon) {
+                                    $fallbackSlug = strtolower(preg_replace('/[^a-z0-9]+/i', '', str_replace([' - ', ' -', '- '], ' ', $process->name)));
+                                    $mappedIcon = $iconLookup[$fallbackSlug] ?? null;
+                                }
+                            @endphp
                             <div class="tv-project-step-icon">
-                                @switch(($index % 6) + 1)
-                                    @case(1)
-                                        <svg viewBox="0 0 64 64" aria-hidden="true"><rect x="18" y="12" width="28" height="40" rx="3"></rect><path d="M25 25h14M25 34h14M25 43h9"></path><path d="m20 52-7-7 7-7"></path></svg>
-                                        @break
-                                    @case(2)
-                                        <svg viewBox="0 0 64 64" aria-hidden="true"><rect x="17" y="14" width="30" height="38" rx="3"></rect><path d="m24 42 17-17 5 5-17 17h-5z"></path><path d="M24 24h10"></path></svg>
-                                        @break
-                                    @case(3)
-                                        <svg viewBox="0 0 64 64" aria-hidden="true"><path d="M20 10h20l8 8v42H20z"></path><path d="M40 10v8h8"></path><path d="M26 28h15M26 38h15M26 48h10"></path></svg>
-                                        @break
-                                    @case(4)
-                                        <svg viewBox="0 0 64 64" aria-hidden="true"><path d="M14 18h7l5 24h25l5-18H25"></path><circle cx="31" cy="50" r="4"></circle><circle cx="48" cy="50" r="4"></circle></svg>
-                                        @break
-                                    @case(5)
-                                        <svg viewBox="0 0 64 64" aria-hidden="true"><path d="M18 24v-8h18v12"></path><rect x="10" y="28" width="30" height="16" rx="2"></rect><path d="M40 32h8l6 7v5H40z"></path><circle cx="20" cy="48" r="4"></circle><circle cx="48" cy="48" r="4"></circle></svg>
-                                        @break
-                                    @default
-                                        <svg viewBox="0 0 64 64" aria-hidden="true"><path d="M29 10h8l1.5 7a18 18 0 0 1 5 2l6-4 5 7-5 5a18 18 0 0 1 1 6l7 3-3 8-7-1a18 18 0 0 1-4 5l2 7-8 3-4-6a18 18 0 0 1-6 0l-4 6-8-3 2-7a18 18 0 0 1-4-5l-7 1-3-8 7-3a18 18 0 0 1 1-6l-5-5 5-7 6 4a18 18 0 0 1 5-2z"></path><circle cx="33" cy="33" r="9"></circle></svg>
-                                @endswitch
+                                @if ($mappedIcon)
+                                    <img
+                                        class="tv-project-step-icon-image"
+                                        src="{{ asset('icon/' . $mappedIcon) }}"
+                                        alt=""
+                                        aria-hidden="true"
+                                    >
+                                @else
+                                    <span class="tv-project-step-icon-fallback">{{ strtoupper(substr($process->name, 0, 2)) }}</span>
+                                @endif
                             </div>
                             <strong>{{ $index + 1 }}. {{ $process->name }}</strong>
                             <small>{{ $process->target_finish?->format('d M Y') ?? '-' }}</small>
@@ -139,12 +157,30 @@
                         <table class="tv-project-table tv-project-stage-track" @if ($loopIndex === 1) aria-hidden="true" @endif>
                             <tbody>
                             @foreach ($processes as $index => $process)
+                                @php
+                                    $stageProcessSlug = strtolower(preg_replace('/[^a-z0-9]+/i', '', $process->name));
+                                    $stageProcessName = strtolower($process->name);
+                                    $stageMappedIcon = match (true) {
+                                        str_contains($stageProcessName, 'packing') || str_contains($stageProcessName, 'shipment') => 'PACKING - SHIPMEN.PNG',
+                                        str_contains($stageProcessName, 'purchasing') => 'PRUSCHASING - BINA.png',
+                                        str_contains($stageProcessName, 'kom') && str_contains($stageProcessName, 'internal') => 'KOM INTERNAL.PNG',
+                                        default => $iconLookup[$stageProcessSlug] ?? $iconLookup[strtolower(preg_replace('/[^a-z0-9]+/i', '', str_replace([' - ', ' -', '- '], ' ', $process->name)))] ?? null,
+                                    };
+                                @endphp
                                 <tr>
                                     <td>{{ $index + 1 }}</td>
                                     <td>{{ $process->name }}</td>
                                     <td>{{ $process->target_start?->format('d M Y') ?? '-' }}</td>
                                     <td>{{ $process->target_finish?->format('d M Y') ?? '-' }}</td>
-                                    <td><span class="tv-project-mini-progress"><i style="width: {{ $process->progress }}%"></i><b>{{ $process->progress }}%</b></span></td>
+                                    <td>
+                                        <span class="tv-project-mini-progress">
+                                            <i style="width: {{ $process->progress }}%"></i>
+                                            <b>{{ $process->progress }}%</b>
+                                        </span>
+                                        @if ($stageMappedIcon)
+                                            <img class="tv-project-mini-icon" src="{{ asset('icon/' . $stageMappedIcon) }}" alt="" aria-hidden="true">
+                                        @endif
+                                    </td>
                                     <td><em class="tv-project-status tv-project-status-{{ $statusClass[$process->status] ?? 'pending' }}">{{ $statusLabel[$process->status] ?? ucfirst($process->status) }}</em></td>
                                     <td>{{ $process->completed_checklists }}/{{ $process->total_checklists }}</td>
                                 </tr>
