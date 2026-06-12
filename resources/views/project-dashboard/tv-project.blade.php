@@ -157,28 +157,23 @@
                         <table class="tv-project-table tv-project-stage-track" @if ($loopIndex === 1) aria-hidden="true" @endif>
                             <tbody>
                             @foreach ($processes as $index => $process)
-                                @php
-                                    $stageProcessSlug = strtolower(preg_replace('/[^a-z0-9]+/i', '', $process->name));
-                                    $stageProcessName = strtolower($process->name);
-                                    $stageMappedIcon = match (true) {
-                                        str_contains($stageProcessName, 'packing') || str_contains($stageProcessName, 'shipment') => 'PACKING - SHIPMEN.PNG',
-                                        str_contains($stageProcessName, 'purchasing') => 'PRUSCHASING - BINA.png',
-                                        str_contains($stageProcessName, 'kom') && str_contains($stageProcessName, 'internal') => 'KOM INTERNAL.PNG',
-                                        default => $iconLookup[$stageProcessSlug] ?? $iconLookup[strtolower(preg_replace('/[^a-z0-9]+/i', '', str_replace([' - ', ' -', '- '], ' ', $process->name)))] ?? null,
-                                    };
-                                @endphp
                                 <tr>
                                     <td>{{ $index + 1 }}</td>
                                     <td>{{ $process->name }}</td>
                                     <td>{{ $process->target_start?->format('d M Y') ?? '-' }}</td>
                                     <td>{{ $process->target_finish?->format('d M Y') ?? '-' }}</td>
                                     <td>
-                                        <span class="tv-project-mini-progress">
-                                            <i style="width: {{ $process->progress }}%"></i>
-                                            <b>{{ $process->progress }}%</b>
-                                        </span>
-                                        @if ($stageMappedIcon)
-                                            <img class="tv-project-mini-icon" src="{{ asset('icon/' . $stageMappedIcon) }}" alt="" aria-hidden="true">
+                                        @php
+                                            $stageProgress = is_numeric($process->progress) ? (int) round($process->progress) : null;
+                                        @endphp
+
+                                        @if ($stageProgress !== null && $stageProgress >= 0)
+                                            <span class="tv-project-stage-progress" aria-label="Progress {{ $stageProgress }}%">
+                                                <i style="width: {{ min(max($stageProgress, 0), 100) }}%"></i>
+                                                <b>{{ $stageProgress }}%</b>
+                                            </span>
+                                        @else
+                                            <span class="tv-project-stage-progress-empty">-</span>
                                         @endif
                                     </td>
                                     <td><em class="tv-project-status tv-project-status-{{ $statusClass[$process->status] ?? 'pending' }}">{{ $statusLabel[$process->status] ?? ucfirst($process->status) }}</em></td>

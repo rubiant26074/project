@@ -2503,15 +2503,18 @@ body[data-theme='control-room'] .checklist-item {
     position: relative;
     height: 14px;
     overflow: hidden;
-    border-radius: 2px;
-    background: color-mix(in srgb, var(--line) 24%, transparent);
+    border: 1px solid color-mix(in srgb, var(--accent-dark) 18%, var(--tv-panel-line));
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--accent-dark) 8%, var(--tv-panel-bg));
 }
 
 .tv-project-progress i,
 .tv-project-mini-progress i {
     display: block;
     height: 100%;
+    border-radius: 999px;
     background: linear-gradient(90deg, var(--accent-dark) 0%, var(--accent) 100%);
+    box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.24);
 }
 
 .tv-project-progress b {
@@ -2652,6 +2655,36 @@ body[data-theme='control-room'] .checklist-item {
     to {
         transform: translateY(-100%);
     }
+}
+
+.tv-project-stage-progress {
+    display: grid;
+    grid-template-columns: minmax(70px, 1fr) auto;
+    align-items: center;
+    gap: 6px;
+    min-width: 110px;
+}
+
+.tv-project-stage-progress i {
+    display: block;
+    height: 8px;
+    border: 1px solid color-mix(in srgb, var(--accent-dark) 18%, transparent);
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--accent-dark) 0%, var(--accent) 100%);
+    box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.22), 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+.tv-project-stage-progress b {
+    color: var(--accent-dark);
+    font-size: 0.62rem;
+    font-weight: 900;
+    white-space: nowrap;
+}
+
+.tv-project-stage-progress-empty {
+    color: var(--muted);
+    font-size: 0.68rem;
+    font-style: italic;
 }
 
 .tv-project-mini-progress {
