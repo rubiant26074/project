@@ -231,12 +231,24 @@
                 </svg>
 
                 @foreach ($project->processes as $process)
+                    @php
+                        $processNotificationCount = auth()->user()->unreadProcessNotificationCount($process);
+                    @endphp
                     <a
                         class="flow-node flow-node-project flow-node-{{ $process->status }}"
                         href="{{ route('projects.processes.show', [$project, $process]) }}"
                         style="left: {{ $process->position_x }}%; top: {{ $process->position_y }}%;"
                     >
                         <span class="flow-node-badge">{{ $process->progress }}%</span>
+                        @if ($processNotificationCount > 0)
+                            <span class="flow-node-notify" aria-label="Ada {{ $processNotificationCount }} pesan baru di proses ini">
+                                <svg viewBox="0 0 24 24" aria-hidden="true">
+                                    <path d="M15 17H5l1.5-2.2c.5-.8.8-1.8.8-2.8V9a4.5 4.5 0 1 1 9 0v3c0 1 .3 2 .8 2.8L19 17h-4Z"></path>
+                                    <path d="M10 18a2 2 0 0 0 4 0"></path>
+                                </svg>
+                                <strong>{{ $processNotificationCount }}</strong>
+                            </span>
+                        @endif
                         <div class="flow-node-body">
                             <div class="flow-node-title">
                                 <span class="flow-node-status-dot flow-node-status-dot-{{ $process->status }}" aria-hidden="true"></span>

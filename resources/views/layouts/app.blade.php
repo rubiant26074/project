@@ -173,9 +173,10 @@
                                 @auth
                                     @php
                                         $notificationCount = auth()->user()->unreadNotificationCount();
-                                        $latestNotification = null;
+                                    @endphp
 
-                                        if ($notificationCount > 0) {
+                                    @if ($notificationCount > 0)
+                                        @php
                                             $latestNotification = \App\Models\ProjectProcessComment::query()
                                                 ->with(['process.project'])
                                                 ->when(auth()->user()->last_notification_seen_at, function ($query) {
@@ -183,24 +184,20 @@
                                                 })
                                                 ->latest('created_at')
                                                 ->first();
-                                        }
-                                    @endphp
 
-                                    @php
-                                        $notificationTarget = $latestNotification
-                                            ? route('projects.processes.show', [$latestNotification->process->project, $latestNotification->process])
-                                            : route('my-tasks.index');
-                                    @endphp
+                                            $notificationTarget = $latestNotification
+                                                ? route('projects.processes.show', [$latestNotification->process->project, $latestNotification->process])
+                                                : route('my-tasks.index');
+                                        @endphp
 
-                                    <a href="{{ $notificationTarget }}" class="notification-bell" aria-label="Buka pesan terbaru">
-                                        <svg viewBox="0 0 24 24" aria-hidden="true">
-                                            <path d="M15 17H5l1.5-2.2c.5-.8.8-1.8.8-2.8V9a4.5 4.5 0 1 1 9 0v3c0 1 .3 2 .8 2.8L19 17h-4Z"></path>
-                                            <path d="M10 18a2 2 0 0 0 4 0"></path>
-                                        </svg>
-                                        @if ($notificationCount > 0)
+                                        <a href="{{ route('notifications.read', ['redirect' => $notificationTarget]) }}" class="notification-bell" aria-label="Buka pesan terbaru">
+                                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                                <path d="M15 17H5l1.5-2.2c.5-.8.8-1.8.8-2.8V9a4.5 4.5 0 1 1 9 0v3c0 1 .3 2 .8 2.8L19 17h-4Z"></path>
+                                                <path d="M10 18a2 2 0 0 0 4 0"></path>
+                                            </svg>
                                             <span class="notification-badge">{{ $notificationCount }}</span>
-                                        @endif
-                                    </a>
+                                        </a>
+                                    @endif
 
                                     <div class="page-topbar-badge">{{ auth()->user()->name }}</div>
                                 @endauth

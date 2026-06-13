@@ -1256,6 +1256,36 @@ body[data-theme='control-room'] .checklist-item {
     gap: 12px;
 }
 
+.project-card-head-right {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.notification-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    min-height: 24px;
+    padding: 0 7px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.14), rgba(220, 38, 38, 0.18));
+    color: #b91c1c;
+    font-size: 0.76rem;
+    font-weight: 800;
+}
+
+.notification-chip svg,
+.flow-node-notify svg {
+    width: 14px;
+    height: 14px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
 .project-card:hover {
     transform: translateY(-3px);
     box-shadow: var(--card-shadow-hover);
@@ -3120,6 +3150,23 @@ body[data-theme='control-room'] .flow-line {
     right: 10px;
     padding: 0 6px;
     font-size: 0.62rem;
+}
+
+.flow-node-notify {
+    position: absolute;
+    top: 10px;
+    right: 48px;
+    z-index: 3;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    min-height: 22px;
+    padding: 0 6px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.18), rgba(220, 38, 38, 0.24));
+    color: #b91c1c;
+    font-size: 0.62rem;
+    font-weight: 800;
 }
 
 .flow-node-editor {

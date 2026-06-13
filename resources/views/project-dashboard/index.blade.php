@@ -55,13 +55,27 @@
 
             <div class="project-card-grid">
                 @forelse ($projects as $project)
+                    @php
+                        $projectNotificationCount = auth()->user()->unreadProjectNotificationCount($project);
+                    @endphp
                     <div class="project-card status-{{ $project->status }}">
                         <a class="project-card-main" href="{{ route('projects.show', $project) }}">
                             <div class="project-card-head">
                                 <p class="project-card-label">{{ strtoupper($project->status) }}</p>
-                                <span class="project-status-chip project-status-chip-{{ $project->status }}">
+                                <div class="project-card-head-right">
+                                    @if ($projectNotificationCount > 0)
+                                        <span class="notification-chip" aria-label="Ada {{ $projectNotificationCount }} pesan baru di project ini">
+                                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                                <path d="M15 17H5l1.5-2.2c.5-.8.8-1.8.8-2.8V9a4.5 4.5 0 1 1 9 0v3c0 1 .3 2 .8 2.8L19 17h-4Z"></path>
+                                                <path d="M10 18a2 2 0 0 0 4 0"></path>
+                                            </svg>
+                                            <strong>{{ $projectNotificationCount }}</strong>
+                                        </span>
+                                    @endif
+                                    <span class="project-status-chip project-status-chip-{{ $project->status }}">
                                     {{ $project->progress }}%
                                 </span>
+                                </div>
                             </div>
                             <strong>{{ $project->wo_number }}</strong>
                             <h3>{{ $project->client_name }}</h3>

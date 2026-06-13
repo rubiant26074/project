@@ -20,8 +20,14 @@ Route::middleware('guest')->group(function (): void {
 
 Route::middleware('auth')->group(function (): void {
     Route::post('/logout', [AuthController::class, 'destroy'])->name('logout');
-    Route::post('/notifications/read', function (Illuminate\Http\Request $request): Illuminate\Http\RedirectResponse {
+    Route::match(['get', 'post'], '/notifications/read', function (Illuminate\Http\Request $request): Illuminate\Http\RedirectResponse {
         $request->user()?->markNotificationsAsRead();
+
+        $redirectTo = $request->query('redirect', $request->input('redirect'));
+
+        if (filled($redirectTo)) {
+            return redirect($redirectTo);
+        }
 
         return back()->with('status', 'Notifikasi berhasil ditandai sudah dibaca.');
     })->name('notifications.read');

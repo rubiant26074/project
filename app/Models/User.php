@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Schema;
+use App\Models\Project;
 use App\Models\ProjectProcess;
 use App\Models\ProjectProcessComment;
 
@@ -140,6 +141,34 @@ class User extends Authenticatable
         $lastSeenAt = $this->last_notification_seen_at;
 
         return ProjectProcessComment::query()
+            ->when($lastSeenAt, fn ($query) => $query->where('created_at', '>', $lastSeenAt))
+            ->count();
+    }
+
+    public function unreadProjectNotificationCount(Project $project): int
+    {
+        if (! Schema::hasColumn('users', 'last_notification_seen_at')) {
+            return 0;
+        }
+
+        $lastSeenAt = $this->last_notification_seen_at;
+
+        return ProjectProcessComment::query()
+            ->whereHas('process', fn ($query) => $query->where('project_id', $project->getKey()))
+            ->when($lastSeenAt, fn ($query) => $query->where('created_at', '>', $lastSeenAt))
+            ->count();
+    }
+
+    public function unreadProcessNotificationCount(ProjectProcess $process): int
+    {
+        if (! Schema::hasColumn('users', 'last_notification_seen_at')) {
+            return 0;
+        }
+
+        $lastSeenAt = $this->last_notification_seen_at;
+
+        return ProjectProcessComment::query()
+            ->where('project_process_id', $process->getKey())
             ->when($lastSeenAt, fn ($query) => $query->where('created_at', '>', $lastSeenAt))
             ->count();
     }
