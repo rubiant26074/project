@@ -8,7 +8,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Schema;
 use App\Models\ProjectProcess;
+use App\Models\ProjectProcessComment;
 
 class User extends Authenticatable
 {
@@ -23,6 +25,7 @@ class User extends Authenticatable
         'is_active',
         'approved_at',
         'approved_by',
+        'last_notification_seen_at',
     ];
 
     protected $hidden = [
@@ -42,6 +45,7 @@ class User extends Authenticatable
             'password' => 'hashed',
             'is_active' => 'boolean',
             'approved_at' => 'datetime',
+            'last_notification_seen_at' => 'datetime',
         ];
     }
 
@@ -125,6 +129,30 @@ class User extends Authenticatable
         }
 
         return $commentUserId === $this->id;
+    }
+
+    public function unreadNotificationCount(): int
+    {
+        if (! Schema::hasColumn('users', 'last_notification_seen_at')) {
+            return 0;
+        }
+
+        $lastSeenAt = $this->last_notification_seen_at;
+
+        return ProjectProcessComment::query()
+            ->when($lastSeenAt, fn ($query) => $query->where('created_at', '>', $lastSeenAt))
+            ->count();
+    }
+
+    public function markNotificationsAsRead(): void
+    {
+        if (! Schema::hasColumn('users', 'last_notification_seen_at')) {
+            return;
+        }
+
+        $this->forceFill([
+            'last_notification_seen_at' => now(),
+        ])->save();
     }
 
     public static function roleMatrix(): array

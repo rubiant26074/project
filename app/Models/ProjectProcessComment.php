@@ -11,6 +11,8 @@ class ProjectProcessComment extends Model
         'project_process_id',
         'user_id',
         'comment',
+        'created_at',
+        'updated_at',
     ];
 
     public function process(): BelongsTo

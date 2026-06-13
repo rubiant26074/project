@@ -20,6 +20,11 @@ Route::middleware('guest')->group(function (): void {
 
 Route::middleware('auth')->group(function (): void {
     Route::post('/logout', [AuthController::class, 'destroy'])->name('logout');
+    Route::post('/notifications/read', function (Illuminate\Http\Request $request): Illuminate\Http\RedirectResponse {
+        $request->user()?->markNotificationsAsRead();
+
+        return back()->with('status', 'Notifikasi berhasil ditandai sudah dibaca.');
+    })->name('notifications.read');
     Route::get('/', [ProjectDashboardController::class, 'index'])->middleware('permission:dashboard_view')->name('dashboard');
     Route::get('/dashboard-tv1', [ProjectDashboardController::class, 'tv1'])->middleware('permission:dashboard_view')->name('dashboard.tv1');
     Route::get('/tugas-saya', [MyTaskController::class, 'index'])->middleware('permission:process_view')->name('my-tasks.index');
