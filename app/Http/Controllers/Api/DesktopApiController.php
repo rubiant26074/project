@@ -14,25 +14,30 @@ class DesktopApiController extends Controller
 {
     public function login(Request $request): JsonResponse
     {
-        $credentials = $request->validate([
-            'email' => ['required', 'email'],
-            'password' => ['required', 'string'],
-        ]);
+        $email = trim((string) $request->input('email'));
+        $password = (string) $request->input('password');
 
-        $user = User::query()->where('email', $credentials['email'])->first();
-
-        if (! $user || ! Hash::check($credentials['password'], $user->password)) {
+        if ($email === '' || $password === '' || ! filter_var($email, FILTER_VALIDATE_EMAIL)) {
             return response()->json([
                 'success' => false,
                 'message' => 'Email atau password tidak sesuai.',
-            ], 401);
+            ]);
+        }
+
+        $user = User::query()->where('email', $email)->first();
+
+        if (! $user || ! Hash::check($password, $user->password)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Email atau password tidak sesuai.',
+            ]);
         }
 
         if (! $user->isApproved()) {
             return response()->json([
                 'success' => false,
                 'message' => 'Akun belum aktif.',
-            ], 403);
+            ]);
         }
 
         $token = Str::random(80);
