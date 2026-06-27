@@ -2031,7 +2031,9 @@ body[data-theme='control-room'] .checklist-item {
 
 .tv-overview-scroll {
     max-height: 342px;
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
     scroll-behavior: auto;
 }
 

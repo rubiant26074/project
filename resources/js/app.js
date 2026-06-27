@@ -42,6 +42,23 @@ document.querySelectorAll('[data-tv-auto-scroll]').forEach((container) => {
         isUserPaused = container.matches(':hover');
     });
 
+    container.addEventListener('wheel', (event) => {
+        const maxScroll = container.scrollHeight - container.clientHeight;
+
+        if (maxScroll <= 4) {
+            return;
+        }
+
+        const previousScrollTop = container.scrollTop;
+        container.scrollTop += event.deltaY;
+        pauseTicks = 36;
+        isUserPaused = container.matches(':hover') || document.activeElement === container;
+
+        if (container.scrollTop !== previousScrollTop) {
+            event.preventDefault();
+        }
+    }, { passive: false });
+
     window.setInterval(() => {
         const maxScroll = container.scrollHeight - container.clientHeight;
 
