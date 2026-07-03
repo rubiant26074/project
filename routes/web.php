@@ -9,6 +9,8 @@ use App\Http\Controllers\ProjectProcessCommentController;
 use App\Http\Controllers\ProjectProcessChecklistController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserManagementController;
+use App\Support\GoogleDriveUploadService;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function (): void {
@@ -49,10 +51,37 @@ Route::middleware('auth')->group(function (): void {
         Route::post('/{project}/processes/{process}/checklists', [ProjectProcessChecklistController::class, 'store'])->name('processes.checklists.store');
         Route::put('/{project}/processes/{process}/checklists', [ProjectProcessChecklistController::class, 'bulkUpdate'])->name('processes.checklists.bulk-update');
         Route::put('/{project}/processes/{process}/checklists/{checklist}', [ProjectProcessChecklistController::class, 'update'])->name('processes.checklists.update');
+        Route::post('/{project}/processes/{process}/checklists/{checklist}/document', [ProjectProcessChecklistController::class, 'uploadDocument'])->name('processes.checklists.document.upload');
         Route::delete('/{project}/processes/{process}/checklists/{checklist}', [ProjectProcessChecklistController::class, 'destroy'])->name('processes.checklists.destroy');
         Route::post('/{project}/processes/{process}/comments', [ProjectProcessCommentController::class, 'store'])->name('processes.comments.store');
         Route::delete('/{project}/processes/{process}/comments/{comment}', [ProjectProcessCommentController::class, 'destroy'])->name('processes.comments.destroy');
     });
+
+    Route::get('/google-drive/connect', function (GoogleDriveUploadService $drive): Illuminate\Http\RedirectResponse {
+        try {
+            return redirect()->away($drive->authorizationUrl());
+        } catch (\Throwable $exception) {
+            return redirect()
+                ->back()
+                ->withErrors(['google_drive' => $exception->getMessage()]);
+        }
+    })->middleware('permission:project_update')->name('google-drive.connect');
+
+    Route::get('/oauth2callback.php', function (Request $request, GoogleDriveUploadService $drive): Illuminate\Http\RedirectResponse {
+        abort_unless($request->filled('code'), 422, 'Kode otorisasi Google tidak ditemukan.');
+
+        try {
+            $drive->exchangeCode((string) $request->query('code'));
+        } catch (\Throwable $exception) {
+            return redirect()
+                ->route('dashboard')
+                ->withErrors(['google_drive' => $exception->getMessage()]);
+        }
+
+        return redirect()
+            ->route('dashboard')
+            ->with('status', 'Google Drive berhasil terhubung.');
+    })->middleware('permission:project_update')->name('google-drive.callback');
 
     Route::prefix('master-flows')->name('master-flows.')->middleware('permission:master_flow_manage')->group(function (): void {
         Route::get('/', [MasterFlowController::class, 'index'])->name('index');

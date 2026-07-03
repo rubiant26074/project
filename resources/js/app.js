@@ -316,6 +316,68 @@ if (checklistRows.length > 0) {
     }
 }
 
+document.querySelectorAll('[data-drive-upload-form]').forEach((form) => {
+    const input = form.querySelector('[data-drive-upload-input]');
+    const button = form.querySelector('[data-drive-upload-button]');
+    const row = form.closest('[data-checklist-row]');
+    const linkInput = row?.querySelector('[data-checklist-field="document_link"]');
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+
+    if (!input || !button || !linkInput) {
+        return;
+    }
+
+    button.addEventListener('click', () => {
+        input.click();
+    });
+
+    input.addEventListener('change', async () => {
+        if (!input.files || input.files.length === 0) {
+            return;
+        }
+
+        const originalTitle = button.title;
+        const formData = new FormData(form);
+
+        button.disabled = true;
+        button.classList.add('is-uploading');
+        button.title = 'Mengupload dokumen...';
+
+        try {
+            const response = await fetch(form.action, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken ?? '',
+                    Accept: 'application/json',
+                },
+                body: formData,
+            });
+            const payload = await response.json().catch(() => ({}));
+
+            if (!response.ok) {
+                throw new Error(payload.message || 'Dokumen belum berhasil diupload.');
+            }
+
+            linkInput.value = payload.link ?? '';
+            linkInput.dispatchEvent(new Event('input', { bubbles: true }));
+            linkInput.dispatchEvent(new Event('change', { bubbles: true }));
+
+            if (window.projectControlStoreScrollState) {
+                window.projectControlStoreScrollState();
+            }
+
+            window.location.reload();
+        } catch (error) {
+            window.alert(error.message || 'Dokumen belum berhasil diupload.');
+        } finally {
+            button.disabled = false;
+            button.classList.remove('is-uploading');
+            button.title = originalTitle;
+            input.value = '';
+        }
+    });
+});
+
 function normalizeSpreadsheetDate(value) {
     if (!value) {
         return '';

@@ -173,6 +173,7 @@
                 @if ($canUpdateThisProcess)
                     <div class="checklist-sheet-toolbar">
                         <span>Paste dari Excel didukung untuk kolom Link Dokumen, Target Mulai, dan Target Selesai.</span>
+                        <a class="document-drive-connect" href="{{ route('google-drive.connect') }}">Hubungkan Google Drive</a>
                     </div>
                     <form id="checklist-bulk-update" method="POST" action="{{ route('projects.processes.checklists.bulk-update', [$project, $process]) }}">
                         @csrf
@@ -244,6 +245,17 @@
                                                     placeholder="Paste link"
                                                     data-checklist-field="document_link"
                                                 >
+                                                <form method="POST" action="{{ route('projects.processes.checklists.document.upload', [$project, $process, $item]) }}" enctype="multipart/form-data" class="checklist-upload-form" data-drive-upload-form>
+                                                    @csrf
+                                                    <input class="checklist-upload-input" type="file" name="document" data-drive-upload-input>
+                                                    <button class="table-icon-button table-icon-button-upload checklist-cell-action" type="button" data-drive-upload-button title="Upload dokumen ke Google Drive" aria-label="Upload dokumen ke Google Drive">
+                                                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                                                            <path d="M12 16V4"></path>
+                                                            <path d="m7 9 5-5 5 5"></path>
+                                                            <path d="M5 20h14"></path>
+                                                        </svg>
+                                                    </button>
+                                                </form>
                                                 @if ($item->document_link && $documentHref)
                                                     <a class="table-icon-button table-icon-button-link checklist-cell-action" href="{{ $documentHref }}" target="_blank" rel="noopener noreferrer" title="Buka link dokumen" aria-label="Buka link dokumen">
                                                         <svg viewBox="0 0 24 24" aria-hidden="true">

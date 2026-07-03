@@ -4554,8 +4554,21 @@ body[data-theme='control-room'] .admin-table textarea {
 
 .checklist-link-cell {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr) auto auto;
     align-items: center;
+}
+
+.checklist-upload-form {
+    margin: 0;
+}
+
+.checklist-upload-input {
+    display: none;
+}
+
+.table-icon-button-upload.is-uploading {
+    opacity: 0.64;
+    cursor: wait;
 }
 
 .table-action-group {
@@ -4575,6 +4588,11 @@ body[data-theme='control-room'] .admin-table textarea {
 }
 
 .checklist-sheet-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
     padding: 8px 10px;
     border: 1px solid rgba(43, 57, 72, 0.12);
     border-radius: 10px;
@@ -4582,6 +4600,12 @@ body[data-theme='control-room'] .admin-table textarea {
     color: var(--muted);
     font-size: 0.78rem;
     font-weight: 700;
+}
+
+.document-drive-connect {
+    color: var(--accent-dark);
+    font-weight: 900;
+    white-space: nowrap;
 }
 
 .checklist-save-row {

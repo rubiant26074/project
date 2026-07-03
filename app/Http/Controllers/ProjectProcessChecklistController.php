@@ -7,6 +7,8 @@ use App\Models\ProjectProcess;
 use App\Models\ProjectProcessChecklist;
 use App\Support\ProjectProcessActivityService;
 use App\Support\ProjectProgressService;
+use App\Support\GoogleDriveUploadService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Validator;
@@ -290,6 +292,60 @@ class ProjectProcessChecklistController extends Controller
         return redirect()
             ->route('projects.processes.show', [$project, $process])
             ->with('status', 'Checklist proses berhasil dihapus.');
+    }
+
+    public function uploadDocument(Request $request, Project $project, ProjectProcess $process, ProjectProcessChecklist $checklist, GoogleDriveUploadService $drive): JsonResponse|RedirectResponse
+    {
+        abort_unless(
+            (int) $process->project_id === (int) $project->getKey()
+            && (int) $checklist->project_process_id === (int) $process->getKey(),
+            404,
+        );
+        abort_unless($request->user()?->canUpdateProcess($process), 403);
+
+        $validated = $request->validate([
+            'document' => ['required', 'file', 'max:51200'],
+        ]);
+
+        try {
+            $uploaded = $drive->upload($validated['document'], implode(' ', [
+                $project->wo_number,
+                $process->name,
+                $checklist->label,
+            ]));
+        } catch (\Throwable $exception) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => $exception->getMessage()], 422);
+            }
+
+            return redirect()
+                ->route('projects.processes.show', [$project, $process])
+                ->withErrors(['document' => $exception->getMessage()]);
+        }
+
+        $previousDocumentLink = $checklist->document_link;
+        $checklist->update(['document_link' => $uploaded['link']]);
+
+        if ($previousDocumentLink !== $checklist->document_link) {
+            app(ProjectProcessActivityService::class)->log(
+                $process,
+                $request->user(),
+                'checklist_document_uploaded',
+                sprintf('Dokumen untuk checklist "%s" diupload ke Google Drive.', $checklist->label),
+                [
+                    'checklist_id' => $checklist->id,
+                    'document_link' => $checklist->document_link,
+                ],
+            );
+        }
+
+        if ($request->expectsJson()) {
+            return response()->json($uploaded);
+        }
+
+        return redirect()
+            ->route('projects.processes.show', [$project, $process])
+            ->with('status', 'Dokumen berhasil diupload ke Google Drive.');
     }
 
     private function configureBulkChecklistValidation(Validator $validator): void
