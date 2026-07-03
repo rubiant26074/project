@@ -12,6 +12,7 @@ class GoogleDriveUploadService
 {
     private string $tokenPath = 'google-drive/token.json';
     private ?array $envFallback = null;
+    private ?array $clientSecretFallback = null;
 
     public function authorizationUrl(): string
     {
@@ -163,7 +164,7 @@ class GoogleDriveUploadService
     private function ensureConfigured(): void
     {
         if (blank($this->clientId()) || blank($this->clientSecret()) || blank($this->redirectUri())) {
-            throw new RuntimeException('Konfigurasi Google Drive belum lengkap. Isi GOOGLE_DRIVE_CLIENT_ID, GOOGLE_DRIVE_CLIENT_SECRET, dan GOOGLE_DRIVE_REDIRECT_URI.');
+            throw new RuntimeException('Konfigurasi Google Drive belum lengkap. Isi GOOGLE_DRIVE_CLIENT_ID, GOOGLE_DRIVE_CLIENT_SECRET, dan GOOGLE_DRIVE_REDIRECT_URI di .env, atau upload file client_secret Google ke storage/app/private/google-drive/client_secret.json.');
         }
     }
 
@@ -192,7 +193,12 @@ class GoogleDriveUploadService
             return $configuredValue;
         }
 
-        return (string) ($this->envFallback()[$envKey] ?? '');
+        $envValue = (string) ($this->envFallback()[$envKey] ?? '');
+        if (filled($envValue)) {
+            return $envValue;
+        }
+
+        return (string) ($this->clientSecretFallback()[$configKey] ?? '');
     }
 
     private function envFallback(): array
@@ -219,6 +225,43 @@ class GoogleDriveUploadService
         }
 
         return $this->envFallback = $values;
+    }
+
+    private function clientSecretFallback(): array
+    {
+        if ($this->clientSecretFallback !== null) {
+            return $this->clientSecretFallback;
+        }
+
+        foreach ($this->clientSecretFallbackPaths() as $path) {
+            if (! is_file($path) || ! is_readable($path)) {
+                continue;
+            }
+
+            $payload = json_decode(file_get_contents($path) ?: '', true);
+            $web = $payload['web'] ?? [];
+
+            if (! is_array($web)) {
+                continue;
+            }
+
+            return $this->clientSecretFallback = [
+                'client_id' => $web['client_id'] ?? '',
+                'client_secret' => $web['client_secret'] ?? '',
+                'redirect_uri' => $web['redirect_uris'][0] ?? '',
+            ];
+        }
+
+        return $this->clientSecretFallback = [];
+    }
+
+    private function clientSecretFallbackPaths(): array
+    {
+        return [
+            storage_path('app/private/google-drive/client_secret.json'),
+            storage_path('app/google-drive/client_secret.json'),
+            base_path('client_secret.json'),
+        ];
     }
 
     private function buildFilename(UploadedFile $file, string $namePrefix): string
