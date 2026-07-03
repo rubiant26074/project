@@ -11,6 +11,7 @@ use RuntimeException;
 class GoogleDriveUploadService
 {
     private string $tokenPath = 'google-drive/token.json';
+    private ?array $envFallback = null;
 
     public function authorizationUrl(): string
     {
@@ -156,7 +157,7 @@ class GoogleDriveUploadService
 
     private function clientId(): string
     {
-        return (string) config('services.google_drive.client_id');
+        return $this->credential('client_id', 'GOOGLE_DRIVE_CLIENT_ID');
     }
 
     private function ensureConfigured(): void
@@ -168,17 +169,56 @@ class GoogleDriveUploadService
 
     private function clientSecret(): string
     {
-        return (string) config('services.google_drive.client_secret');
+        return $this->credential('client_secret', 'GOOGLE_DRIVE_CLIENT_SECRET');
     }
 
     private function redirectUri(): string
     {
-        return (string) config('services.google_drive.redirect_uri');
+        return $this->credential('redirect_uri', 'GOOGLE_DRIVE_REDIRECT_URI');
     }
 
     private function folderId(): ?string
     {
-        return config('services.google_drive.folder_id');
+        $folderId = $this->credential('folder_id', 'GOOGLE_DRIVE_FOLDER_ID');
+
+        return filled($folderId) ? $folderId : null;
+    }
+
+    private function credential(string $configKey, string $envKey): string
+    {
+        $configuredValue = (string) config("services.google_drive.{$configKey}");
+
+        if (filled($configuredValue)) {
+            return $configuredValue;
+        }
+
+        return (string) ($this->envFallback()[$envKey] ?? '');
+    }
+
+    private function envFallback(): array
+    {
+        if ($this->envFallback !== null) {
+            return $this->envFallback;
+        }
+
+        $path = base_path('.env');
+        if (! is_file($path) || ! is_readable($path)) {
+            return $this->envFallback = [];
+        }
+
+        $values = [];
+        foreach (file($path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) ?: [] as $line) {
+            $line = trim($line);
+
+            if ($line === '' || str_starts_with($line, '#') || ! str_contains($line, '=')) {
+                continue;
+            }
+
+            [$key, $value] = explode('=', $line, 2);
+            $values[trim($key)] = trim(trim($value), "\"'");
+        }
+
+        return $this->envFallback = $values;
     }
 
     private function buildFilename(UploadedFile $file, string $namePrefix): string
