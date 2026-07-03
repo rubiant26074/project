@@ -49,13 +49,13 @@ class GoogleDriveUploadService
         $this->storeToken($payload);
     }
 
-    public function upload(UploadedFile $file, string $namePrefix = ''): array
+    public function upload(UploadedFile $file, string $documentName = '', array $folderNames = []): array
     {
         $this->ensureConfigured();
 
         $accessToken = $this->accessToken();
-        $filename = $this->buildFilename($file, $namePrefix);
-        $folderId = $this->targetFolderId($accessToken);
+        $filename = $this->buildFilename($file, $documentName);
+        $folderId = $this->targetFolderId($accessToken, $folderNames);
 
         $metadata = array_filter([
             'name' => $filename,
@@ -154,30 +154,45 @@ class GoogleDriveUploadService
             ]);
     }
 
-    private function targetFolderId(string $accessToken): ?string
+    private function targetFolderId(string $accessToken, array $folderNames = []): ?string
     {
         $folderId = $this->folderId();
 
-        if (filled($folderId)) {
-            return $folderId;
+        if (blank($folderId)) {
+            $folderName = $this->folderName();
+
+            if (filled($folderName)) {
+                $folderId = $this->findFolderId($folderName, $accessToken) ?: $this->createFolder($folderName, $accessToken);
+            }
         }
 
-        $folderName = $this->folderName();
+        foreach ($folderNames as $folderName) {
+            $folderName = $this->sanitizeDriveName((string) $folderName);
 
-        if (blank($folderName)) {
-            return null;
+            if (blank($folderName)) {
+                continue;
+            }
+
+            $folderId = $this->findFolderId($folderName, $accessToken, $folderId)
+                ?: $this->createFolder($folderName, $accessToken, $folderId);
         }
 
-        return $this->findFolderId($folderName, $accessToken) ?: $this->createFolder($folderName, $accessToken);
+        return $folderId;
     }
 
-    private function findFolderId(string $folderName, string $accessToken): ?string
+    private function findFolderId(string $folderName, string $accessToken, ?string $parentId = null): ?string
     {
         $escapedName = str_replace(["\\", "'"], ["\\\\", "\\'"], $folderName);
+        $query = "mimeType = 'application/vnd.google-apps.folder' and name = '{$escapedName}' and trashed = false";
+
+        if (filled($parentId)) {
+            $query .= " and '{$parentId}' in parents";
+        }
+
         $response = $this->http()
             ->withToken($accessToken)
             ->get('https://www.googleapis.com/drive/v3/files', [
-                'q' => "mimeType = 'application/vnd.google-apps.folder' and name = '{$escapedName}' and trashed = false",
+                'q' => $query,
                 'spaces' => 'drive',
                 'fields' => 'files(id,name)',
                 'pageSize' => 1,
@@ -190,14 +205,17 @@ class GoogleDriveUploadService
         return $response->json('files.0.id');
     }
 
-    private function createFolder(string $folderName, string $accessToken): ?string
+    private function createFolder(string $folderName, string $accessToken, ?string $parentId = null): ?string
     {
+        $metadata = array_filter([
+            'name' => $folderName,
+            'mimeType' => 'application/vnd.google-apps.folder',
+            'parents' => filled($parentId) ? [$parentId] : null,
+        ]);
+
         $response = $this->http()
             ->withToken($accessToken)
-            ->post('https://www.googleapis.com/drive/v3/files?fields=id,name', [
-                'name' => $folderName,
-                'mimeType' => 'application/vnd.google-apps.folder',
-            ]);
+            ->post('https://www.googleapis.com/drive/v3/files?fields=id,name', $metadata);
 
         if (! $response->successful()) {
             return null;
@@ -339,14 +357,18 @@ class GoogleDriveUploadService
         ];
     }
 
-    private function buildFilename(UploadedFile $file, string $namePrefix): string
+    private function buildFilename(UploadedFile $file, string $documentName): string
     {
-        $prefix = trim(preg_replace('/[^A-Za-z0-9._ -]+/', '-', $namePrefix), '- ');
-        $name = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
         $extension = $file->getClientOriginalExtension();
-        $safeName = trim(preg_replace('/[^A-Za-z0-9._ -]+/', '-', $name), '- ') ?: 'dokumen';
+        $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+        $safeName = $this->sanitizeDriveName($documentName) ?: $this->sanitizeDriveName($originalName) ?: 'dokumen';
 
-        return trim($prefix . ' ' . now()->format('Ymd-His') . ' ' . $safeName) . ($extension ? ".{$extension}" : '');
+        return $safeName . ($extension ? ".{$extension}" : '');
+    }
+
+    private function sanitizeDriveName(string $name): string
+    {
+        return trim(preg_replace('/[^A-Za-z0-9._ -]+/', '-', $name), '- ');
     }
 
     private function http(): PendingRequest

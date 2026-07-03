@@ -308,11 +308,10 @@ class ProjectProcessChecklistController extends Controller
         ]);
 
         try {
-            $uploaded = $drive->upload($validated['document'], implode(' ', [
+            $uploaded = $drive->upload($validated['document'], $checklist->label, [
                 $project->wo_number,
                 $process->name,
-                $checklist->label,
-            ]));
+            ]);
         } catch (\Throwable $exception) {
             if ($request->expectsJson()) {
                 return response()->json(['message' => $exception->getMessage()], 422);
