@@ -55,10 +55,11 @@ class GoogleDriveUploadService
 
         $accessToken = $this->accessToken();
         $filename = $this->buildFilename($file, $namePrefix);
+        $folderId = $this->targetFolderId($accessToken);
 
         $metadata = array_filter([
             'name' => $filename,
-            'parents' => filled($this->folderId()) ? [$this->folderId()] : null,
+            'parents' => filled($folderId) ? [$folderId] : null,
         ]);
 
         $boundary = 'bcp_drive_' . bin2hex(random_bytes(12));
@@ -70,15 +71,11 @@ class GoogleDriveUploadService
             '--' . $boundary,
             'Content-Type: ' . ($file->getMimeType() ?: 'application/octet-stream'),
             '',
-            file_get_contents($file->getRealPath()),
-            '--' . $boundary . '--',
-            '',
-        ]);
+        ]) . "\r\n" . file_get_contents($file->getRealPath()) . "\r\n--{$boundary}--\r\n";
 
         $upload = $this->http()
             ->withToken($accessToken)
-            ->withHeaders(['Content-Type' => 'multipart/related; boundary=' . $boundary])
-            ->withBody($body)
+            ->withBody($body, 'multipart/related; boundary=' . $boundary)
             ->post('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,webViewLink');
 
         if (! $upload->successful()) {
@@ -157,6 +154,58 @@ class GoogleDriveUploadService
             ]);
     }
 
+    private function targetFolderId(string $accessToken): ?string
+    {
+        $folderId = $this->folderId();
+
+        if (filled($folderId)) {
+            return $folderId;
+        }
+
+        $folderName = $this->folderName();
+
+        if (blank($folderName)) {
+            return null;
+        }
+
+        return $this->findFolderId($folderName, $accessToken) ?: $this->createFolder($folderName, $accessToken);
+    }
+
+    private function findFolderId(string $folderName, string $accessToken): ?string
+    {
+        $escapedName = str_replace(["\\", "'"], ["\\\\", "\\'"], $folderName);
+        $response = $this->http()
+            ->withToken($accessToken)
+            ->get('https://www.googleapis.com/drive/v3/files', [
+                'q' => "mimeType = 'application/vnd.google-apps.folder' and name = '{$escapedName}' and trashed = false",
+                'spaces' => 'drive',
+                'fields' => 'files(id,name)',
+                'pageSize' => 1,
+            ]);
+
+        if (! $response->successful()) {
+            return null;
+        }
+
+        return $response->json('files.0.id');
+    }
+
+    private function createFolder(string $folderName, string $accessToken): ?string
+    {
+        $response = $this->http()
+            ->withToken($accessToken)
+            ->post('https://www.googleapis.com/drive/v3/files?fields=id,name', [
+                'name' => $folderName,
+                'mimeType' => 'application/vnd.google-apps.folder',
+            ]);
+
+        if (! $response->successful()) {
+            return null;
+        }
+
+        return $response->json('id');
+    }
+
     private function storedToken(): array
     {
         if (! $this->isConnected()) {
@@ -202,6 +251,13 @@ class GoogleDriveUploadService
         $folderId = $this->credential('folder_id', 'GOOGLE_DRIVE_FOLDER_ID');
 
         return filled($folderId) ? $folderId : null;
+    }
+
+    private function folderName(): ?string
+    {
+        $folderName = $this->credential('folder_name', 'GOOGLE_DRIVE_FOLDER_NAME');
+
+        return filled($folderName) ? $folderName : 'bcp-prj-apk';
     }
 
     private function credential(string $configKey, string $envKey): string
