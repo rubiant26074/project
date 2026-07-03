@@ -6,6 +6,7 @@ use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
+use InvalidArgumentException;
 use RuntimeException;
 
 class GoogleDriveUploadService
@@ -97,6 +98,24 @@ class GoogleDriveUploadService
     public function isConnected(): bool
     {
         return Storage::disk('local')->exists($this->tokenPath);
+    }
+
+    public function storeClientSecret(string $json): void
+    {
+        $payload = json_decode($json, true);
+        $web = $payload['web'] ?? [];
+
+        if (
+            ! is_array($web)
+            || blank($web['client_id'] ?? null)
+            || blank($web['client_secret'] ?? null)
+            || blank($web['redirect_uris'][0] ?? null)
+        ) {
+            throw new InvalidArgumentException('File client_secret Google tidak valid.');
+        }
+
+        Storage::disk('local')->put('google-drive/client_secret.json', json_encode($payload, JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR));
+        $this->clientSecretFallback = null;
     }
 
     private function accessToken(): string
